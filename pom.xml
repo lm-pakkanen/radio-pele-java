@@ -20,6 +20,13 @@
 		<java.version>21</java.version>
 	</properties>
 
+  <repositories>
+    <repository>
+      <id>jitpack</id>
+      <url>https://jitpack.io</url>
+    </repository>
+  </repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -36,7 +43,13 @@
       <groupId>net.dv8tion</groupId>
       <artifactId>JDA</artifactId>
       <version>5.0.0-beta.20</version> 
-  </dependency>
+    </dependency>
+
+    <dependency>
+      <groupId>dev.arbjerg</groupId>
+      <artifactId>lavaplayer</artifactId>
+      <version>2.1.0</version>
+    </dependency>
 	</dependencies>
 
 	<build>
