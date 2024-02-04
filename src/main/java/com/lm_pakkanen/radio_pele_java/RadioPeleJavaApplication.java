@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class RadioPeleJavaApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(RadioPeleJavaApplication.class, args);
-	}
-
+  public static void main(String[] args) {
+    SpringApplication.run(RadioPeleJavaApplication.class, args);
+  }
 }
