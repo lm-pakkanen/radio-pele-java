@@ -18,14 +18,14 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 @Component
 public final class TrackScheduler {
   private static final int FRAME_BUFFER_DURATION_MS = 30_000;
-  private final Store store;
+  private final @NonNull Store store;
 
-  private final AudioPlayerManager audioPlayerManager;
-  private final AudioPlayer audioPlayer;
+  private final @NonNull AudioPlayerManager audioPlayerManager;
+  private final @NonNull AudioPlayer audioPlayer;
 
-  private final TrackResolver trackResolver;
-  private final RapAudioSendHandler rapAudioSendHandler;
-  private final RapAudioEventHandler rapAudioEventHandler;
+  private final @NonNull TrackResolver trackResolver;
+  private final @NonNull RapAudioSendHandler rapAudioSendHandler;
+  private final @NonNull RapAudioEventHandler rapAudioEventHandler;
 
   private @Nullable TextChannel lastTextChan;
 
@@ -33,12 +33,17 @@ public final class TrackScheduler {
     this.store = new Store();
 
     this.audioPlayerManager = new DefaultAudioPlayerManager();
-
     this.audioPlayerManager
         .setFrameBufferDuration(TrackScheduler.FRAME_BUFFER_DURATION_MS);
-
-    this.audioPlayer = audioPlayerManager.createPlayer();
     AudioSourceManagers.registerRemoteSources(this.audioPlayerManager);
+
+    AudioPlayer audioPlayer = this.audioPlayerManager.createPlayer();
+
+    if (audioPlayer == null) {
+      throw new NullPointerException("AudioPlayer is null");
+    }
+
+    this.audioPlayer = audioPlayer;
 
     this.trackResolver = new TrackResolver(this.audioPlayerManager);
     this.rapAudioSendHandler = new RapAudioSendHandler(this);
@@ -47,43 +52,37 @@ public final class TrackScheduler {
     this.audioPlayer.addListener(this.rapAudioEventHandler);
   }
 
+  /**
+   * @return AudioPlayer instance.
+   */
   public @NonNull AudioPlayer getAudioPlayer() {
-    AudioPlayer audioPlayer = this.audioPlayer;
-
-    if (audioPlayer == null) {
-      throw new NullPointerException("AudioPlayer is null");
-    }
-
+    final AudioPlayer audioPlayer = this.audioPlayer;
     return audioPlayer;
   }
 
+  /**
+   * @return RapAudioSendHandler instance.
+   */
   public @NonNull RapAudioSendHandler getRapAudioSendHandler() {
-    RapAudioSendHandler rapAudioSendHandler = this.rapAudioSendHandler;
-
-    if (rapAudioSendHandler == null) {
-      throw new NullPointerException("RapAudioSendHandler is null");
-    }
-
-    return rapAudioSendHandler;
+    return this.rapAudioSendHandler;
   }
 
-  public boolean play() {
-    if (!this.isPlaying()) {
-      // If not yet playing a song, play the next one in the queue
-      this.playNextTrack();
-      return true;
-    }
-
-    return false;
-  }
-
-  public void onTrackEndHandler(AudioPlayer player, AudioTrack track,
-      AudioTrackEndReason endReason) {
+  /**
+   * Handler for when a track ends. If the track ended normally, tries to start
+   * the next track if the queue is not empty. Sends message to the latest text
+   * channel informing users about the next song or abou the queue being empty.
+   * 
+   * @param player    AudioPlayer instance. Supplied by superclass.
+   * @param track     the track that ended. Supplied by superclass.
+   * @param endReason the reason the track ended. Supplied by superclass.
+   */
+  public void onTrackEndHandler(@NonNull AudioPlayer player,
+      @NonNull AudioTrack track, AudioTrackEndReason endReason) {
     if (!endReason.mayStartNext) {
       return;
     }
 
-    AudioTrack nextTrack = this.store.shift();
+    final AudioTrack nextTrack = this.store.shift();
 
     if (nextTrack == null && lastTextChan != null) {
       MailMan.sendMessage(lastTextChan, "Q empty.");
@@ -99,7 +98,31 @@ public final class TrackScheduler {
     }
   }
 
-  public boolean addToQueue(@NonNull TextChannel textChan, String url)
+  /**
+   * Start the audio player.
+   * 
+   * @return boolean whether the action succeeeded.
+   */
+  public boolean play() {
+    if (!this.isPlaying()) {
+      // If not yet playing a song, play the next one in the queue
+      this.playNextTrack();
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Tries to add the given URL to the queue. If the action fails, throws a
+   * FailedToLoadSongException.
+   * 
+   * @param textChan TextChannel instance where the command was invoked.
+   * @param url      the URL of the song to add to the queue.
+   * @return boolean whether the action succeeeded.
+   * @throws FailedToLoadSongException
+   */
+  public boolean addToQueue(@NonNull TextChannel textChan, @Nullable String url)
       throws FailedToLoadSongException {
     this.setLastTextChannel(textChan);
 
@@ -107,17 +130,29 @@ public final class TrackScheduler {
       throw new FailedToLoadSongException("Invalid url.");
     }
 
-    AudioTrack audioTrack = this.trackResolver.resolve(url);
+    final AudioTrack audioTrack = this.trackResolver.resolve(url);
     this.store.add(audioTrack);
     return true;
   }
 
+  /**
+   * Skips the current song (stops the track and starts the next one in the
+   * queue).
+   * 
+   * @return boolean whether the action succeeeded.
+   */
   public boolean skipCurrentSong() {
     this.audioPlayer.stopTrack();
     this.playNextTrack();
     return true;
   }
 
+  /**
+   * Stops the audio player and clears the queue. Sets the last text channel to
+   * null.
+   * 
+   * @return boolean whether the action succeeeded.
+   */
   public boolean destroy() {
     this.audioPlayer.stopTrack();
     this.store.clear();
@@ -125,11 +160,19 @@ public final class TrackScheduler {
     return true;
   }
 
+  /**
+   * Shuffles the current queue.
+   * 
+   * @return boolean whether the action succeeeded.
+   */
   public boolean shuffle() {
     this.store.shuffle();
     return true;
   }
 
+  /**
+   * @return whether if the audio player is currently playing a track.
+   */
   public boolean isPlaying() {
     final AudioTrack currentTrack = this.audioPlayer.getPlayingTrack();
     final boolean isPlaying = currentTrack != null
@@ -137,6 +180,9 @@ public final class TrackScheduler {
     return isPlaying;
   }
 
+  /**
+   * Plays the next track in the queue if available.
+   */
   private void playNextTrack() {
     final AudioTrack nextTrack = this.store.shift();
 
@@ -145,6 +191,9 @@ public final class TrackScheduler {
     }
   }
 
+  /**
+   * @param textChan last text channel where a command was invoked.
+   */
   private void setLastTextChannel(@NonNull TextChannel textChan) {
     this.lastTextChan = textChan;
   }

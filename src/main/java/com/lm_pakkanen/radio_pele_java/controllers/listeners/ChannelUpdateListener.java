@@ -14,6 +14,10 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 @Component
 public class ChannelUpdateListener implements IEventListener {
 
+  /**
+   * Listens to GuildVoiceUpdateEvents and leaves the voice channel if only bots
+   * are left in the bot's connected voice channel.
+   */
   @Override
   public void onEvent(GenericEvent event) {
     if (!(event instanceof GuildVoiceUpdateEvent)) {
@@ -21,11 +25,12 @@ public class ChannelUpdateListener implements IEventListener {
       return;
     }
 
-    GuildVoiceUpdateEvent guildVoiceUpdateEvent = (GuildVoiceUpdateEvent) event;
-    AudioChannelUnion chanUserLeftFrom = guildVoiceUpdateEvent.getChannelLeft();
+    final GuildVoiceUpdateEvent guildVoiceUpdateEvent = (GuildVoiceUpdateEvent) event;
+    final AudioChannelUnion chanUserLeftFrom = guildVoiceUpdateEvent
+        .getChannelLeft();
 
-    AudioChannelUnion connectedAudioChan = guildVoiceUpdateEvent.getGuild()
-        .getAudioManager().getConnectedChannel();
+    final AudioChannelUnion connectedAudioChan = guildVoiceUpdateEvent
+        .getGuild().getAudioManager().getConnectedChannel();
 
     if (chanUserLeftFrom == null || connectedAudioChan == null) {
       // Don't care
@@ -37,9 +42,9 @@ public class ChannelUpdateListener implements IEventListener {
       return;
     }
 
-    List<Member> membersInChan = connectedAudioChan.getMembers();
+    final List<Member> membersInChan = connectedAudioChan.getMembers();
 
-    boolean isAllBotsInChan = membersInChan.stream()
+    final boolean isAllBotsInChan = membersInChan.stream()
         .allMatch(member -> member.getUser().isBot());
 
     if (isAllBotsInChan) {

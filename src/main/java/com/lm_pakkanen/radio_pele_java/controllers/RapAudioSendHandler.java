@@ -2,6 +2,8 @@ package com.lm_pakkanen.radio_pele_java.controllers;
 
 import java.nio.ByteBuffer;
 
+import org.springframework.lang.NonNull;
+
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
 
@@ -9,17 +11,23 @@ import net.dv8tion.jda.api.audio.AudioSendHandler;
 
 public class RapAudioSendHandler implements AudioSendHandler {
 
-  private final TrackScheduler trackScheduler;
-  private final AudioPlayer audioPlayer;
+  private final @NonNull TrackScheduler trackScheduler;
+  private final @NonNull AudioPlayer audioPlayer;
 
-  private final ByteBuffer audioBuffer;
-  private final MutableAudioFrame audioFrame;
+  private final @NonNull ByteBuffer audioBuffer;
+  private final @NonNull MutableAudioFrame audioFrame;
 
-  public RapAudioSendHandler(TrackScheduler trackScheduler) {
+  public RapAudioSendHandler(@NonNull TrackScheduler trackScheduler) {
     this.trackScheduler = trackScheduler;
     this.audioPlayer = this.trackScheduler.getAudioPlayer();
 
-    this.audioBuffer = ByteBuffer.allocate(2048);
+    ByteBuffer audioBuffer = ByteBuffer.allocate(2048);
+
+    if (audioBuffer == null) {
+      throw new NullPointerException("AudioBuffer is null");
+    }
+
+    this.audioBuffer = audioBuffer;
     this.audioFrame = new MutableAudioFrame();
     this.audioFrame.setBuffer(this.audioBuffer);
   }
@@ -30,7 +38,7 @@ public class RapAudioSendHandler implements AudioSendHandler {
   }
 
   @Override
-  public ByteBuffer provide20MsAudio() {
+  public @NonNull ByteBuffer provide20MsAudio() {
     this.audioBuffer.flip();
     return this.audioBuffer;
   }
@@ -39,5 +47,4 @@ public class RapAudioSendHandler implements AudioSendHandler {
   public boolean isOpus() {
     return true;
   }
-
 }

@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.lang.NonNull;
 
 import com.lm_pakkanen.radio_pele_java.controllers.commands.CommandBuilder;
 import com.lm_pakkanen.radio_pele_java.interfaces.ICommandListener;
@@ -25,40 +26,48 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 public class Config {
 
   @Value("${REGEN_COMMANDS}")
-  public boolean REGEN_COMMANDS;
+  public @NonNull Boolean REGEN_COMMANDS = false;
 
   @Value("${BOT_CLIENT_ID}")
-  public String BOT_CLIENT_ID;
+  public @NonNull String BOT_CLIENT_ID = "";
 
   @Value("${BOT_TOKEN}")
-  public String BOT_TOKEN;
+  public @NonNull String BOT_TOKEN = "";
 
   @Value("${BOT_STATUS_MESSAGE}")
-  public String BOT_STATUS_MESSAGE;
+  public @NonNull String BOT_STATUS_MESSAGE = "";
 
   @Value("${SPOTIFY_CLIENT_ID}")
-  public String SPOTIFY_CLIENT_ID;
+  public @NonNull String SPOTIFY_CLIENT_ID = "";
 
   @Value("${SPOTIFY_CLIENT_SECRET}")
-  public String SPOTIFY_CLIENT_SECRET;
+  public @NonNull String SPOTIFY_CLIENT_SECRET = "";
 
+  /**
+   * Generates JDA client instance.
+   * 
+   * @param commands       autowired commands to listen to.
+   * @param eventListeners autowired event listeners to listen to.
+   * @return JDA instance.
+   */
   @Bean
   public JDA getJDAInstance(@Autowired List<ICommandListener> commands,
       @Autowired List<IEventListener> eventListeners) {
 
-    JDABuilder builder = JDABuilder.createDefault(BOT_TOKEN);
+    final JDABuilder builder = JDABuilder.createDefault(BOT_TOKEN);
     builder.setStatus(OnlineStatus.ONLINE);
     builder.setActivity(Activity.playing(BOT_STATUS_MESSAGE));
 
-    JDA jda = builder.build();
+    final JDA jda = builder.build();
     commands.stream().forEach(jda::addEventListener);
     eventListeners.stream().forEach(jda::addEventListener);
 
     if (this.REGEN_COMMANDS) {
-      CommandBuilder commandBuilder = new CommandBuilder(commands);
+      // Regenerate commands if env variable is set to true.
+      final CommandBuilder commandBuilder = new CommandBuilder(commands);
       commandBuilder.autoGenerateCommands();
 
-      List<SlashCommandData> generatedSlashCommands = commandBuilder
+      final List<SlashCommandData> generatedSlashCommands = commandBuilder
           .getSlashCommands();
 
       jda.updateCommands().addCommands(generatedSlashCommands).queue();
