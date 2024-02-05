@@ -1,5 +1,6 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,10 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 @Component
 public final class TrackScheduler {
+
   private static final int FRAME_BUFFER_DURATION_MS = 30_000;
+
+  private final @NonNull SpotifyController spotifyController;
   private final @NonNull Store store;
 
   private final @NonNull AudioPlayerManager audioPlayerManager;
@@ -29,7 +33,10 @@ public final class TrackScheduler {
 
   private @Nullable TextChannel lastTextChan;
 
-  public TrackScheduler() {
+  public TrackScheduler(@Autowired @NonNull SpotifyController spotifyController)
+      throws NullPointerException {
+
+    this.spotifyController = spotifyController;
     this.store = new Store();
 
     this.audioPlayerManager = new DefaultAudioPlayerManager();
@@ -45,7 +52,9 @@ public final class TrackScheduler {
 
     this.audioPlayer = audioPlayer;
 
-    this.trackResolver = new TrackResolver(this.audioPlayerManager);
+    this.trackResolver = new TrackResolver(this.spotifyController,
+        this.audioPlayerManager);
+
     this.rapAudioSendHandler = new RapAudioSendHandler(this);
     this.rapAudioEventHandler = new RapAudioEventHandler(this);
 

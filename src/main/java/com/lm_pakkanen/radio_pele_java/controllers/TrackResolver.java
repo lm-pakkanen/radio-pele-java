@@ -1,5 +1,6 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
@@ -11,9 +12,12 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 public final class TrackResolver {
+  private final @NonNull SpotifyController spotifyController;
   private final @NonNull AudioPlayerManager audioPlayerManager;
 
-  public TrackResolver(@NonNull AudioPlayerManager audioPlayerManager) {
+  public TrackResolver(@Autowired @NonNull SpotifyController spotifyController,
+      @NonNull AudioPlayerManager audioPlayerManager) {
+    this.spotifyController = spotifyController;
     this.audioPlayerManager = audioPlayerManager;
   }
 
@@ -30,8 +34,11 @@ public final class TrackResolver {
       throws FailedToLoadSongException {
     String finalUrl = url;
 
-    if (url.startsWith("spotify")) {
-      finalUrl = url; // TODO
+    if (url.contains("spotify")) {
+      final String qualifiedTrackName = this.spotifyController
+          .resolveQualifiedTrackName(url);
+
+      finalUrl = "ytsearch:" + qualifiedTrackName;
     }
 
     final TrackResolver.RapAudioLoadResultHandler resultHandler = this.new RapAudioLoadResultHandler();
@@ -44,7 +51,7 @@ public final class TrackResolver {
     if (resolvedTrack == null && failureMessage != null) {
       throw new FailedToLoadSongException(failureMessage);
     } else if (resolvedTrack == null) {
-      throw new FailedToLoadSongException();
+      throw new FailedToLoadSongException("Not found.");
     }
 
     return resolvedTrack;
@@ -71,8 +78,18 @@ public final class TrackResolver {
      */
     @Override
     public void playlistLoaded(AudioPlaylist playlist) {
-      final AudioTrack selectedTrack = playlist.getSelectedTrack();
-      this.resolvedTrack = selectedTrack;
+      AudioTrack selectedTrack = playlist.getSelectedTrack();
+
+      if (selectedTrack == null) {
+        selectedTrack = playlist.getTracks().get(0);
+      }
+
+      if (selectedTrack == null) {
+        this.failureMessage = "No tracks found.";
+      } else {
+        this.resolvedTrack = selectedTrack;
+      }
+
       this.isReady = true;
     }
 
