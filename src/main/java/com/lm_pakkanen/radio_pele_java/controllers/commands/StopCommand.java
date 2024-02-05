@@ -1,6 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers.commands;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import com.lm_pakkanen.radio_pele_java.controllers.MailMan;
@@ -10,20 +11,18 @@ import com.lm_pakkanen.radio_pele_java.models.exceptions.InvalidChannelException
 
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 @Component
-public final class StopCommand extends ListenerAdapter
-    implements ICommandListener {
+public final class StopCommand extends BaseCommand implements ICommandListener {
 
-  private TrackScheduler trackScheduler;
+  private @NonNull TrackScheduler trackScheduler;
 
-  public StopCommand(@Autowired TrackScheduler trackScheduler) {
+  public StopCommand(@Autowired @NonNull TrackScheduler trackScheduler) {
+    super();
     this.trackScheduler = trackScheduler;
   }
 
@@ -42,6 +41,9 @@ public final class StopCommand extends ListenerAdapter
     return Commands.slash(this.getCommandName(), this.getCommandDescription());
   }
 
+  /**
+   * Stops playback and leaves the voice channel.
+   */
   @Override
   public void onSlashCommandInteraction(SlashCommandInteractionEvent event)
       throws NullPointerException {
@@ -50,13 +52,9 @@ public final class StopCommand extends ListenerAdapter
     }
 
     try {
-      MessageChannelUnion messageChan = event.getChannel();
+      super.getTextChan(event);
 
-      if (!messageChan.getType().equals(ChannelType.TEXT)) {
-        throw new InvalidChannelException();
-      }
-
-      AudioManager audioManager = event.getGuild().getAudioManager();
+      final AudioManager audioManager = event.getGuild().getAudioManager();
 
       this.trackScheduler.destroy();
 
@@ -66,13 +64,25 @@ public final class StopCommand extends ListenerAdapter
 
       MailMan.replyInteractionMessage(event, "Hasta la Vista!");
     } catch (InvalidChannelException exception) {
-      MailMan.replyInteractionMessage(event, exception.getMessage());
+      String exceptionMessage = exception.getMessage();
+
+      if (exceptionMessage == null) {
+        exceptionMessage = "Unknown exception occurred.";
+      }
+
+      MailMan.replyInteractionMessage(event, exceptionMessage);
     }
   }
 
+  /**
+   * Tries to leave the voice channel.
+   * 
+   * @param event        that initiated the command.
+   * @param audioManager instance.
+   */
   private void tryLeaveVoiceChan(SlashCommandInteractionEvent event,
       AudioManager audioManager) {
-    AudioChannelUnion audioChan = event.getMember().getVoiceState()
+    final AudioChannelUnion audioChan = event.getMember().getVoiceState()
         .getChannel();
 
     if (audioChan == null || !audioChan.getType().equals(ChannelType.VOICE)) {

@@ -1,6 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers.commands;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import com.lm_pakkanen.radio_pele_java.controllers.MailMan;
@@ -8,20 +9,17 @@ import com.lm_pakkanen.radio_pele_java.controllers.TrackScheduler;
 import com.lm_pakkanen.radio_pele_java.interfaces.ICommandListener;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.InvalidChannelException;
 
-import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
 @Component
-public final class SkipCommand extends ListenerAdapter
-    implements ICommandListener {
+public final class SkipCommand extends BaseCommand implements ICommandListener {
 
-  private TrackScheduler trackScheduler;
+  private @NonNull TrackScheduler trackScheduler;
 
-  public SkipCommand(@Autowired TrackScheduler trackScheduler) {
+  public SkipCommand(@Autowired @NonNull TrackScheduler trackScheduler) {
+    super();
     this.trackScheduler = trackScheduler;
   }
 
@@ -40,6 +38,9 @@ public final class SkipCommand extends ListenerAdapter
     return Commands.slash(this.getCommandName(), this.getCommandDescription());
   }
 
+  /**
+   * Skips the current song.
+   */
   @Override
   public void onSlashCommandInteraction(SlashCommandInteractionEvent event)
       throws NullPointerException {
@@ -48,17 +49,18 @@ public final class SkipCommand extends ListenerAdapter
     }
 
     try {
-      MessageChannelUnion messageChan = event.getChannel();
-
-      if (!messageChan.getType().equals(ChannelType.TEXT)) {
-        throw new InvalidChannelException();
-      }
-
+      super.getTextChan(event);
       this.trackScheduler.skipCurrentSong();
 
       MailMan.replyInteractionMessage(event, "Song skipped.");
     } catch (InvalidChannelException exception) {
-      MailMan.replyInteractionMessage(event, exception.getMessage());
+      String exceptionMessage = exception.getMessage();
+
+      if (exceptionMessage == null) {
+        exceptionMessage = "Unknown exception occurred.";
+      }
+
+      MailMan.replyInteractionMessage(event, exceptionMessage);
     }
   }
 }

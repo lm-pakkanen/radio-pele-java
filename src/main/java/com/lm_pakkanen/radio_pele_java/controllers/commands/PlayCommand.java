@@ -1,6 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers.commands;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import com.lm_pakkanen.radio_pele_java.controllers.MailMan;
@@ -13,21 +14,19 @@ import com.lm_pakkanen.radio_pele_java.models.exceptions.NotInChannelException;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 @Component
-public final class PlayCommand extends ListenerAdapter
-    implements ICommandListener {
+public final class PlayCommand extends BaseCommand implements ICommandListener {
 
-  private TrackScheduler trackScheduler;
+  private @NonNull TrackScheduler trackScheduler;
 
-  public PlayCommand(@Autowired TrackScheduler trackScheduler) {
+  public PlayCommand(@Autowired @NonNull TrackScheduler trackScheduler) {
+    super();
     this.trackScheduler = trackScheduler;
   }
 
@@ -48,6 +47,12 @@ public final class PlayCommand extends ListenerAdapter
             true, false);
   }
 
+  /**
+   * Connects to the voice channel, adds the requested song to the queue and
+   * starts playback if necessary.
+   * 
+   * @param event that initiated the command.
+   */
   @Override
   public void onSlashCommandInteraction(SlashCommandInteractionEvent event)
       throws NullPointerException {
@@ -58,22 +63,12 @@ public final class PlayCommand extends ListenerAdapter
     event.deferReply().queue();
 
     try {
-      MessageChannelUnion messageChan = event.getChannel();
+      TextChannel textChan = super.getTextChan(event);
 
-      if (!messageChan.getType().equals(ChannelType.TEXT)) {
-        throw new InvalidChannelException();
-      }
+      final String url = event.getOption("url").getAsString();
+      this.trackScheduler.addToQueue(textChan, url);
 
-      TextChannel textChannel = messageChan.asTextChannel();
-
-      if (textChannel == null) {
-        throw new InvalidChannelException();
-      }
-
-      String url = event.getOption("url").getAsString();
-      this.trackScheduler.addToQueue(textChannel, url);
-
-      AudioManager audioManager = event.getGuild().getAudioManager();
+      final AudioManager audioManager = event.getGuild().getAudioManager();
 
       if (!audioManager.isConnected()) {
         tryConnectToVoiceChan(event, audioManager);
@@ -89,20 +84,33 @@ public final class PlayCommand extends ListenerAdapter
       MailMan.replyInteractionMessage(event, "Song added to Q!");
     } catch (InvalidChannelException | NotInChannelException
         | FailedToLoadSongException exception) {
-      MailMan.replyInteractionMessage(event, exception.getMessage());
+
+      String exceptionMessage = exception.getMessage();
+
+      if (exceptionMessage == null) {
+        exceptionMessage = "Unknown exception occurred.";
+      }
+
+      MailMan.replyInteractionMessage(event, exceptionMessage);
     }
   }
 
+  /**
+   * Tries to connect to the voice channel.
+   * 
+   * @param event        that initiated the command.
+   * @param audioManager instance.
+   * @throws NotInChannelException
+   */
   private void tryConnectToVoiceChan(SlashCommandInteractionEvent event,
       AudioManager audioManager) throws NotInChannelException {
-    AudioChannelUnion audioChannel = event.getMember().getVoiceState()
+    final AudioChannelUnion audioChan = event.getMember().getVoiceState()
         .getChannel();
 
-    if (audioChannel == null
-        || !audioChannel.getType().equals(ChannelType.VOICE)) {
+    if (audioChan == null || !audioChan.getType().equals(ChannelType.VOICE)) {
       throw new NotInChannelException();
     }
 
-    audioManager.openAudioConnection(audioChannel);
+    audioManager.openAudioConnection(audioChan);
   }
 }
