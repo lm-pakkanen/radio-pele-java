@@ -29,7 +29,7 @@ public final class MailMan {
   public static void replyInteractionMessage(
       @NonNull SlashCommandInteractionEvent event, String message) {
     if (event.isAcknowledged()) {
-      event.getHook().sendMessage(message).queue();
+      event.getHook().editOriginal(message).queue();
     } else {
       event.reply(message).queue();
     }
@@ -38,7 +38,7 @@ public final class MailMan {
   public static void replyInteractionEmbed(
       @NonNull SlashCommandInteractionEvent event, MessageEmbed embed) {
     if (event.isAcknowledged()) {
-      event.getHook().sendMessageEmbeds(embed).queue();
+      event.getHook().editOriginalEmbeds(embed).queue();
     } else {
       event.replyEmbeds(embed).queue();
     }
