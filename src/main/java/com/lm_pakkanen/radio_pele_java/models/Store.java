@@ -33,6 +33,10 @@ public final class Store {
     }
   }
 
+  public void clear() {
+    this.queue.clear();
+  }
+
   public void shuffle() {
     List<AudioTrack> shuffledTracks = new ArrayList<AudioTrack>(this.queue);
     Collections.shuffle(shuffledTracks);
