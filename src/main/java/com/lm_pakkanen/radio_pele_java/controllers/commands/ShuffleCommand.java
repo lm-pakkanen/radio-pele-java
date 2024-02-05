@@ -41,6 +41,8 @@ public final class ShuffleCommand extends BaseCommand
 
   /**
    * Shuffles the current queue.
+   * 
+   * @throws NullPointerException
    */
   @Override
   public void onSlashCommandInteraction(SlashCommandInteractionEvent event)

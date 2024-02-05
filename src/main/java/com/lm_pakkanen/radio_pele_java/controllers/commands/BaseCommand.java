@@ -11,6 +11,12 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class BaseCommand extends ListenerAdapter {
+
+  /**
+   * @param event which initiated the command.
+   * @return the text channel where the command was initiated.
+   * @throws InvalidChannelException
+   */
   public @NonNull TextChannel getTextChan(SlashCommandInteractionEvent event)
       throws InvalidChannelException {
     final MessageChannelUnion messageChan = event.getChannel();

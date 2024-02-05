@@ -16,6 +16,8 @@ public class RapAudioEventHandler extends AudioEventAdapter {
 
   /**
    * Wrap 'onTrackEnd' handler here and use TrackScheduler's instance method.
+   * 
+   * @throws NullPointerException
    */
   @Override
   public void onTrackEnd(AudioPlayer player, AudioTrack track,

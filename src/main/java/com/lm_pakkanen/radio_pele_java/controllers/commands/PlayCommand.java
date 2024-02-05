@@ -52,6 +52,7 @@ public final class PlayCommand extends BaseCommand implements ICommandListener {
    * starts playback if necessary.
    * 
    * @param event that initiated the command.
+   * @throws NullPointerException
    */
   @Override
   public void onSlashCommandInteraction(SlashCommandInteractionEvent event)

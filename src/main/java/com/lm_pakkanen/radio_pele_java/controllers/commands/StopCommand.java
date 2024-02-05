@@ -43,6 +43,8 @@ public final class StopCommand extends BaseCommand implements ICommandListener {
 
   /**
    * Stops playback and leaves the voice channel.
+   * 
+   * @throws NullPointerException
    */
   @Override
   public void onSlashCommandInteraction(SlashCommandInteractionEvent event)

@@ -40,6 +40,8 @@ public final class SkipCommand extends BaseCommand implements ICommandListener {
 
   /**
    * Skips the current song.
+   * 
+   * @throws NullPointerException
    */
   @Override
   public void onSlashCommandInteraction(SlashCommandInteractionEvent event)

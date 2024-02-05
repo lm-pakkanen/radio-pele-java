@@ -17,7 +17,12 @@ public class RapAudioSendHandler implements AudioSendHandler {
   private final @NonNull ByteBuffer audioBuffer;
   private final @NonNull MutableAudioFrame audioFrame;
 
-  public RapAudioSendHandler(@NonNull TrackScheduler trackScheduler) {
+  /**
+   * @param trackScheduler instance.
+   * @throws NullPointerException
+   */
+  public RapAudioSendHandler(@NonNull TrackScheduler trackScheduler)
+      throws NullPointerException {
     this.trackScheduler = trackScheduler;
     this.audioPlayer = this.trackScheduler.getAudioPlayer();
 
