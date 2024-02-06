@@ -26,7 +26,7 @@ import net.dv8tion.jda.api.managers.AudioManager;
 @Component
 public final class PlayCommand extends BaseCommand implements ICommandListener {
 
-  private @NonNull TrackScheduler trackScheduler;
+  private final @NonNull TrackScheduler trackScheduler;
 
   public PlayCommand(@Autowired @NonNull TrackScheduler trackScheduler) {
     super();

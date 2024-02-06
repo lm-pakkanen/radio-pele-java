@@ -2,8 +2,10 @@ package com.lm_pakkanen.radio_pele_java.controllers.listeners;
 
 import java.util.List;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import com.lm_pakkanen.radio_pele_java.controllers.TrackScheduler;
 import com.lm_pakkanen.radio_pele_java.interfaces.IEventListener;
 
 import net.dv8tion.jda.api.entities.Member;
@@ -13,6 +15,11 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 
 @Component
 public class ChannelUpdateListener implements IEventListener {
+  private final @NonNull TrackScheduler trackScheduler;
+
+  public ChannelUpdateListener(@NonNull TrackScheduler trackScheduler) {
+    this.trackScheduler = trackScheduler;
+  }
 
   /**
    * Listens to GuildVoiceUpdateEvents and leaves the voice channel if only bots
@@ -48,7 +55,8 @@ public class ChannelUpdateListener implements IEventListener {
         .allMatch(member -> member.getUser().isBot());
 
     if (isAllBotsInChan) {
-      // Leae if only bots left in channel
+      // Clear queue and leave channel if only bots left in the channel
+      trackScheduler.destroy();
       connectedAudioChan.getGuild().getAudioManager().closeAudioConnection();
     }
   }

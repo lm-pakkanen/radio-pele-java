@@ -21,7 +21,7 @@ import net.dv8tion.jda.api.managers.AudioManager;
 @Component
 public final class StopCommand extends BaseCommand implements ICommandListener {
 
-  private @NonNull TrackScheduler trackScheduler;
+  private final @NonNull TrackScheduler trackScheduler;
 
   public StopCommand(@Autowired @NonNull TrackScheduler trackScheduler) {
     super();

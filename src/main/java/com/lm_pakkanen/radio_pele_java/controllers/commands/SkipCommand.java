@@ -23,7 +23,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 @Component
 public final class SkipCommand extends BaseCommand implements ICommandListener {
 
-  private @NonNull TrackScheduler trackScheduler;
+  private final @NonNull TrackScheduler trackScheduler;
 
   public SkipCommand(@Autowired @NonNull TrackScheduler trackScheduler) {
     super();

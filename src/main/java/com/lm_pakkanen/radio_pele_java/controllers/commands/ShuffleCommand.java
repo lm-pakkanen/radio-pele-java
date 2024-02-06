@@ -19,7 +19,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 public final class ShuffleCommand extends BaseCommand
     implements ICommandListener {
 
-  private @NonNull TrackScheduler trackScheduler;
+  private final @NonNull TrackScheduler trackScheduler;
 
   public ShuffleCommand(@Autowired @NonNull TrackScheduler trackScheduler) {
     super();
