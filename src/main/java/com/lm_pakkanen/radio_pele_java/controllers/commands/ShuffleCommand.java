@@ -8,6 +8,8 @@ import com.lm_pakkanen.radio_pele_java.controllers.MailMan;
 import com.lm_pakkanen.radio_pele_java.controllers.TrackScheduler;
 import com.lm_pakkanen.radio_pele_java.interfaces.ICommandListener;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.InvalidChannelException;
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.ExceptionEmbed;
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.QueueShuffledEmbed;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -54,15 +56,10 @@ public final class ShuffleCommand extends BaseCommand
     try {
       super.getTextChan(event);
       this.trackScheduler.shuffle();
-      MailMan.replyInteractionMessage(event, "Q shuffled.");
+      MailMan.replyInteractionEmbed(event, new QueueShuffledEmbed().getEmbed());
     } catch (InvalidChannelException exception) {
-      String exceptionMessage = exception.getMessage();
-
-      if (exceptionMessage == null) {
-        exceptionMessage = "Unknown exception occurred.";
-      }
-
-      MailMan.replyInteractionMessage(event, exceptionMessage);
+      MailMan.replyInteractionEmbed(event,
+          new ExceptionEmbed(exception).getEmbed());
     }
   }
 }

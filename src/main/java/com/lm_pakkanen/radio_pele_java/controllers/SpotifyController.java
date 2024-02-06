@@ -175,7 +175,6 @@ public final class SpotifyController {
         @Override
         public void run() {
           refreshAccessToken();
-          refreshAccessTokenTimer.cancel();
         }
       };
 

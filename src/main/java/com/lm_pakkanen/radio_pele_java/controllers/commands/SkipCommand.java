@@ -7,8 +7,15 @@ import org.springframework.stereotype.Component;
 import com.lm_pakkanen.radio_pele_java.controllers.MailMan;
 import com.lm_pakkanen.radio_pele_java.controllers.TrackScheduler;
 import com.lm_pakkanen.radio_pele_java.interfaces.ICommandListener;
+import com.lm_pakkanen.radio_pele_java.models.Store;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.InvalidChannelException;
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.CurrentSongEmbed;
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.ExceptionEmbed;
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.QueueEmptyEmbed;
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.SongSkippedEmbed;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
@@ -50,19 +57,28 @@ public final class SkipCommand extends BaseCommand implements ICommandListener {
       return;
     }
 
+    Store store = this.trackScheduler.getStore();
+
     try {
-      super.getTextChan(event);
-      this.trackScheduler.skipCurrentSong();
-
-      MailMan.replyInteractionMessage(event, "Song skipped.");
-    } catch (InvalidChannelException exception) {
-      String exceptionMessage = exception.getMessage();
-
-      if (exceptionMessage == null) {
-        exceptionMessage = "Unknown exception occurred.";
+      if (this.trackScheduler.getAudioPlayer().getPlayingTrack() == null) {
+        throw new IllegalStateException("No song to skip!");
       }
 
-      MailMan.replyInteractionMessage(event, exceptionMessage);
+      TextChannel textChan = super.getTextChan(event);
+      AudioTrack nextTrack = this.trackScheduler.skipCurrentSong();
+
+      MailMan.replyInteractionEmbed(event, new SongSkippedEmbed().getEmbed());
+
+      if (nextTrack == null) {
+        MailMan.sendEmbed(textChan, new QueueEmptyEmbed().getEmbed());
+      } else {
+        MailMan.sendEmbed(textChan,
+            new CurrentSongEmbed(nextTrack, store).getEmbed());
+      }
+
+    } catch (InvalidChannelException | IllegalStateException exception) {
+      MailMan.replyInteractionEmbed(event,
+          new ExceptionEmbed(exception).getEmbed());
     }
   }
 }

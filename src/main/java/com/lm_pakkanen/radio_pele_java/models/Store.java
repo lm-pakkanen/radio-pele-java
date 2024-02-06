@@ -69,4 +69,11 @@ public final class Store {
     this.queue.clear();
     this.queue.addAll(shuffledTracks);
   }
+
+  /**
+   * @return queue size.
+   */
+  public int getQueueSize() {
+    return this.queue.size();
+  }
 }

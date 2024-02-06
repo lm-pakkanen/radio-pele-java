@@ -10,6 +10,9 @@ import com.lm_pakkanen.radio_pele_java.interfaces.ICommandListener;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.InvalidChannelException;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.NotInChannelException;
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.ExceptionEmbed;
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.SongAddedEmbed;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -67,7 +70,7 @@ public final class PlayCommand extends BaseCommand implements ICommandListener {
       TextChannel textChan = super.getTextChan(event);
 
       final String url = event.getOption("url").getAsString();
-      this.trackScheduler.addToQueue(textChan, url);
+      AudioTrack addedTrack = this.trackScheduler.addToQueue(textChan, url);
 
       final AudioManager audioManager = event.getGuild().getAudioManager();
 
@@ -82,17 +85,13 @@ public final class PlayCommand extends BaseCommand implements ICommandListener {
         this.trackScheduler.play();
       }
 
-      MailMan.replyInteractionMessage(event, "Song added to Q!");
+      MailMan.replyInteractionEmbed(event,
+          new SongAddedEmbed(addedTrack, this.trackScheduler.getStore())
+              .getEmbed());
     } catch (InvalidChannelException | NotInChannelException
         | FailedToLoadSongException exception) {
-
-      String exceptionMessage = exception.getMessage();
-
-      if (exceptionMessage == null) {
-        exceptionMessage = "Unknown exception occurred.";
-      }
-
-      MailMan.replyInteractionMessage(event, exceptionMessage);
+      MailMan.replyInteractionEmbed(event,
+          new ExceptionEmbed(exception).getEmbed());
     }
   }
 

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 
 import com.lm_pakkanen.radio_pele_java.models.Store;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException;
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.CurrentSongEmbed;
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.QueueEmptyEmbed;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -62,6 +64,13 @@ public final class TrackScheduler {
   }
 
   /**
+   * @return store instance.
+   */
+  public @NonNull Store getStore() {
+    return this.store;
+  }
+
+  /**
    * @return AudioPlayer instance.
    */
   public @NonNull AudioPlayer getAudioPlayer() {
@@ -94,7 +103,7 @@ public final class TrackScheduler {
     final AudioTrack nextTrack = this.store.shift();
 
     if (nextTrack == null && lastTextChan != null) {
-      MailMan.sendMessage(lastTextChan, "Q empty.");
+      MailMan.sendEmbed(lastTextChan, new QueueEmptyEmbed().getEmbed());
       return;
     } else if (nextTrack == null) {
       return;
@@ -103,7 +112,8 @@ public final class TrackScheduler {
     this.audioPlayer.playTrack(nextTrack);
 
     if (lastTextChan != null) {
-      MailMan.sendMessage(lastTextChan, "Starting next song in queue.");
+      MailMan.sendEmbed(lastTextChan,
+          new CurrentSongEmbed(nextTrack, this.store).getEmbed());
     }
   }
 
@@ -131,8 +141,8 @@ public final class TrackScheduler {
    * @return boolean whether the action succeeeded.
    * @throws FailedToLoadSongException
    */
-  public boolean addToQueue(@NonNull TextChannel textChan, @Nullable String url)
-      throws FailedToLoadSongException {
+  public @NonNull AudioTrack addToQueue(@NonNull TextChannel textChan,
+      @Nullable String url) throws FailedToLoadSongException {
     this.setLastTextChannel(textChan);
 
     if (url == null || url.isEmpty()) {
@@ -141,7 +151,7 @@ public final class TrackScheduler {
 
     final AudioTrack audioTrack = this.trackResolver.resolve(url);
     this.store.add(audioTrack);
-    return true;
+    return audioTrack;
   }
 
   /**
@@ -150,10 +160,9 @@ public final class TrackScheduler {
    * 
    * @return boolean whether the action succeeeded.
    */
-  public boolean skipCurrentSong() {
+  public @Nullable AudioTrack skipCurrentSong() {
     this.audioPlayer.stopTrack();
-    this.playNextTrack();
-    return true;
+    return this.playNextTrack();
   }
 
   /**
@@ -192,12 +201,14 @@ public final class TrackScheduler {
   /**
    * Plays the next track in the queue if available.
    */
-  private void playNextTrack() {
+  private @Nullable AudioTrack playNextTrack() {
     final AudioTrack nextTrack = this.store.shift();
 
     if (nextTrack != null) {
       this.audioPlayer.playTrack(nextTrack);
     }
+
+    return nextTrack;
   }
 
   /**

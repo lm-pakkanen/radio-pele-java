@@ -8,6 +8,8 @@ import com.lm_pakkanen.radio_pele_java.controllers.MailMan;
 import com.lm_pakkanen.radio_pele_java.controllers.TrackScheduler;
 import com.lm_pakkanen.radio_pele_java.interfaces.ICommandListener;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.InvalidChannelException;
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.ExceptionEmbed;
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.StopEmbed;
 
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
@@ -64,15 +66,10 @@ public final class StopCommand extends BaseCommand implements ICommandListener {
         tryLeaveVoiceChan(event, audioManager);
       }
 
-      MailMan.replyInteractionMessage(event, "Hasta la Vista!");
+      MailMan.replyInteractionEmbed(event, new StopEmbed().getEmbed());
     } catch (InvalidChannelException exception) {
-      String exceptionMessage = exception.getMessage();
-
-      if (exceptionMessage == null) {
-        exceptionMessage = "Unknown exception occurred.";
-      }
-
-      MailMan.replyInteractionMessage(event, exceptionMessage);
+      MailMan.replyInteractionEmbed(event,
+          new ExceptionEmbed(exception).getEmbed());
     }
   }
 
