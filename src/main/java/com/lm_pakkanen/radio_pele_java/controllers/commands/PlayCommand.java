@@ -73,6 +73,7 @@ public final class PlayCommand extends BaseCommand implements ICommandListener {
       AudioTrack addedTrack = this.trackScheduler.addToQueue(textChan, url);
 
       final AudioManager audioManager = event.getGuild().getAudioManager();
+      audioManager.setSelfDeafened(true);
 
       if (!audioManager.isConnected()) {
         tryConnectToVoiceChan(event, audioManager);

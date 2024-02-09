@@ -44,6 +44,7 @@ public final class TrackScheduler {
     this.audioPlayerManager = new DefaultAudioPlayerManager();
     this.audioPlayerManager
         .setFrameBufferDuration(TrackScheduler.FRAME_BUFFER_DURATION_MS);
+
     AudioSourceManagers.registerRemoteSources(this.audioPlayerManager);
 
     AudioPlayer audioPlayer = this.audioPlayerManager.createPlayer();
