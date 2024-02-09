@@ -2,6 +2,7 @@ package com.lm_pakkanen.radio_pele_java.controllers.listeners;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,8 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 public class ChannelUpdateListener implements IEventListener {
   private final @NonNull TrackScheduler trackScheduler;
 
-  public ChannelUpdateListener(@NonNull TrackScheduler trackScheduler) {
+  public ChannelUpdateListener(
+      @Autowired @NonNull TrackScheduler trackScheduler) {
     this.trackScheduler = trackScheduler;
   }
 
