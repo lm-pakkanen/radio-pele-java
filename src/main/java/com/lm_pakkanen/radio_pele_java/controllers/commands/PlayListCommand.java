@@ -24,29 +24,30 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 @Component
-public final class PlayCommand extends BaseCommand implements ICommandListener {
+public final class PlayListCommand extends BaseCommand
+    implements ICommandListener {
 
   private final @NonNull TrackScheduler trackScheduler;
 
-  public PlayCommand(@Autowired @NonNull TrackScheduler trackScheduler) {
+  public PlayListCommand(@Autowired @NonNull TrackScheduler trackScheduler) {
     super();
     this.trackScheduler = trackScheduler;
   }
 
   @Override
   public String getCommandName() {
-    return "play";
+    return "playlist";
   }
 
   @Override
   public String getCommandDescription() {
-    return "Play song from a given URL or resume playback if paused.";
+    return "Play playlist from a given URL.";
   }
 
   @Override
   public SlashCommandData getCommandData() {
     return Commands.slash(this.getCommandName(), this.getCommandDescription())
-        .addOption(OptionType.STRING, "url", "The URL of the song to play",
+        .addOption(OptionType.STRING, "url", "The URL of the playlist to play",
             true, false);
   }
 

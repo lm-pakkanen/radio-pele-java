@@ -1,5 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -101,7 +103,7 @@ public final class TrackScheduler {
       return;
     }
 
-    final AudioTrack nextTrack = this.store.shift();
+    final AudioTrack nextTrack = this.playNextTrack();
 
     if (nextTrack == null && lastTextChan != null) {
       MailMan.sendEmbed(lastTextChan, new QueueEmptyEmbed().getEmbed());
@@ -150,9 +152,27 @@ public final class TrackScheduler {
       throw new FailedToLoadSongException("Invalid url.");
     }
 
-    final AudioTrack audioTrack = this.trackResolver.resolve(url);
-    this.store.add(audioTrack);
-    return audioTrack;
+    final boolean isPlaylist = url.contains("/playlist/")
+        || url.contains("?list=") || url.contains("&list=");
+
+    final List<AudioTrack> audioTracks = this.trackResolver.resolve(url,
+        isPlaylist);
+
+    final AudioTrack firstTrack = audioTracks.get(0);
+
+    if (firstTrack == null) {
+      throw new FailedToLoadSongException("Not found.");
+    }
+
+    if (isPlaylist) {
+      this.store.addPlaylist(audioTracks);
+    } else {
+      for (AudioTrack audioTrack : audioTracks) {
+        this.store.add(audioTrack);
+      }
+    }
+
+    return firstTrack;
   }
 
   /**
@@ -203,7 +223,17 @@ public final class TrackScheduler {
    * Plays the next track in the queue if available.
    */
   private @Nullable AudioTrack playNextTrack() {
-    final AudioTrack nextTrack = this.store.shift();
+    if (!this.store.hasPlaylist()) {
+      final AudioTrack nextTrack = this.store.shift();
+
+      if (nextTrack != null) {
+        this.audioPlayer.playTrack(nextTrack);
+      }
+
+      return nextTrack;
+    }
+
+    final AudioTrack nextTrack = this.store.shiftPlaylist();
 
     if (nextTrack != null) {
       this.audioPlayer.playTrack(nextTrack);
