@@ -195,6 +195,7 @@ public final class TrackScheduler {
   public boolean destroy() {
     this.audioPlayer.stopTrack();
     this.store.clear();
+    this.store.clearPlaylist();
     this.lastTextChan = null;
     return true;
   }

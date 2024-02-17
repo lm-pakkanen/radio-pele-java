@@ -106,6 +106,13 @@ public final class Store {
   }
 
   /**
+   * Clears the queue.
+   */
+  public void clearPlaylist() {
+    this.playListUrlsQueue.clear();
+  }
+
+  /**
    * Shuffles the queue.
    */
   public void shuffle() {
