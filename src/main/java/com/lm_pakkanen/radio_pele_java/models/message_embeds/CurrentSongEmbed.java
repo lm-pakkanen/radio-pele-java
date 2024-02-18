@@ -18,7 +18,6 @@ public final class CurrentSongEmbed implements IEmbedBuilder {
    * @param store instance.
    */
   public CurrentSongEmbed(@NonNull AudioTrack track, @NonNull Store store) {
-
     final TrackInfo trackInfo = new TrackInfo(track);
 
     final StringBuilder trackTitleWithDurationBuilder = new StringBuilder();
@@ -29,8 +28,20 @@ public final class CurrentSongEmbed implements IEmbedBuilder {
     final String trackTitleWithDuration = trackTitleWithDurationBuilder
         .toString();
 
-    final String queueLengthDescription = String
-        .format("%d song(s) in Q after current song", store.getQueueSize());
+    String queueLengthDescription = null;
+
+    if (store.hasPlaylist() && store.getQueueSize() == 0) {
+      queueLengthDescription = String.format(
+          "Playlist with %d song(s) in Q after current song",
+          store.getPlaylistQueueSize());
+    } else if (store.hasPlaylist()) {
+      queueLengthDescription = String.format(
+          "Q'd playlist will be destroyed after current song, %d song(s) in normal Q",
+          store.getQueueSize());
+    } else {
+      queueLengthDescription = String
+          .format("%d song(s) in Q after current song", store.getQueueSize());
+    }
 
     final EmbedBuilder embedBuilder = IEmbedBuilder.getEmbedBuilder();
     embedBuilder.setTitle("NOW PLAYING");

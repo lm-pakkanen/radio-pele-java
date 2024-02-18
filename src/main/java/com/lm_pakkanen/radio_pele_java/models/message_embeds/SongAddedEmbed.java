@@ -29,8 +29,20 @@ public final class SongAddedEmbed implements IEmbedBuilder {
     final String trackTitleWithDuration = trackTitleWithDurationBuilder
         .toString();
 
-    final String queueLengthDescription = String
-        .format("%d song(s) in Q after current song", store.getQueueSize());
+    String queueLengthDescription = null;
+
+    if (store.hasPlaylist() && store.getQueueSize() == 0) {
+      queueLengthDescription = String.format(
+          "Playlist with %d song(s) in Q after current song",
+          store.getPlaylistQueueSize());
+    } else if (store.hasPlaylist()) {
+      queueLengthDescription = String.format(
+          "Q'd playlist will be destroyed after current song, %d song(s) in normal Q",
+          store.getQueueSize());
+    } else {
+      queueLengthDescription = String
+          .format("%d song(s) in Q after current song", store.getQueueSize());
+    }
 
     final EmbedBuilder embedBuilder = IEmbedBuilder.getEmbedBuilder();
     embedBuilder.setTitle("SONG ADDED");

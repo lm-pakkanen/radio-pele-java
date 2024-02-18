@@ -151,6 +151,13 @@ public final class Store {
   }
 
   /**
+   * @return playlist queue size.
+   */
+  public int getPlaylistQueueSize() {
+    return this.playListQueue.size();
+  }
+
+  /**
    * @return whether the playlist queue is empty.
    */
   public boolean hasPlaylist() {
