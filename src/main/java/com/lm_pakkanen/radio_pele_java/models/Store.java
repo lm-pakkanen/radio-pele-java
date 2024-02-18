@@ -14,7 +14,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import jakarta.annotation.Nonnull;
 
 public final class Store {
-  private final @Nonnull List<AudioTrack> playListUrlsQueue = new ArrayList<AudioTrack>(
+  private final @Nonnull List<AudioTrack> playListQueue = new ArrayList<AudioTrack>(
       50);
   private final @NonNull BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<AudioTrack>();
 
@@ -36,8 +36,8 @@ public final class Store {
     final int playlistSize = Math.min(50, audioTracks.size());
     final List<AudioTrack> playlistTracks = audioTracks.subList(0,
         playlistSize);
-    this.playListUrlsQueue.clear();
-    this.playListUrlsQueue.addAll(playlistTracks);
+    this.playListQueue.clear();
+    this.playListQueue.addAll(playlistTracks);
   }
 
   /**
@@ -73,11 +73,11 @@ public final class Store {
    * @return the first track from the queue or null if queue is empty.
    */
   public @Nullable AudioTrack shiftPlaylist() {
-    if (this.playListUrlsQueue.isEmpty()) {
+    if (this.playListQueue.isEmpty()) {
       return null;
     }
 
-    return this.playListUrlsQueue.remove(0);
+    return this.playListQueue.remove(0);
   }
 
   /**
@@ -91,11 +91,11 @@ public final class Store {
       return this.shiftPlaylist();
     }
 
-    if (this.playListUrlsQueue.isEmpty()) {
+    if (this.playListQueue.isEmpty()) {
       return null;
     }
 
-    return this.playListUrlsQueue.remove(0);
+    return this.playListQueue.remove(0);
   }
 
   /**
@@ -109,31 +109,38 @@ public final class Store {
    * Clears the queue.
    */
   public void clearPlaylist() {
-    this.playListUrlsQueue.clear();
+    this.playListQueue.clear();
   }
 
   /**
    * Shuffles the queue.
    */
   public void shuffle() {
-    if (this.hasPlaylist()) {
-      List<AudioTrack> shuffledUrls = new ArrayList<AudioTrack>(
-          this.playListUrlsQueue);
-
-      Collections.shuffle(shuffledUrls);
-
-      this.playListUrlsQueue.clear();
-      this.playListUrlsQueue.addAll(shuffledUrls);
-
-      return;
-    }
-
-    List<AudioTrack> shuffledTracks = new ArrayList<AudioTrack>(this.queue);
+    final List<AudioTrack> shuffledTracks = new ArrayList<AudioTrack>(
+        this.queue);
 
     Collections.shuffle(shuffledTracks);
 
     this.queue.clear();
     this.queue.addAll(shuffledTracks);
+  }
+
+  /**
+   * Shuffles the playlist queue.
+   */
+  public void shufflePlaylist() {
+    if (!this.hasPlaylist()) {
+      return;
+    }
+
+    final List<AudioTrack> shuffledUrls = new ArrayList<AudioTrack>(
+        this.playListQueue);
+
+    Collections.shuffle(shuffledUrls);
+
+    this.playListQueue.clear();
+    this.playListQueue.addAll(shuffledUrls);
+
   }
 
   /**
@@ -147,6 +154,6 @@ public final class Store {
    * @return whether the playlist queue is empty.
    */
   public boolean hasPlaylist() {
-    return !this.playListUrlsQueue.isEmpty();
+    return !this.playListQueue.isEmpty();
   }
 }

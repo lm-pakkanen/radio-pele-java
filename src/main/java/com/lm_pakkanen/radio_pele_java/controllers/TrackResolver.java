@@ -34,31 +34,28 @@ public final class TrackResolver {
    * @throws FailedToLoadSongException
    */
   public @NonNull List<AudioTrack> resolve(@NonNull String url,
-      boolean isPlaylist) throws FailedToLoadSongException {
+      boolean asPlaylist) throws FailedToLoadSongException {
     String finalUrl = url;
 
     if (url.contains("spotify")) {
       final String qualifiedTrackName = this.spotifyController
           .resolveQualifiedTrackName(url);
-
       finalUrl = "ytsearch:" + qualifiedTrackName;
     }
 
     final List<AudioTrack> resolvedTracks = new ArrayList<AudioTrack>();
     String failureMessage = null;
 
-    if (isPlaylist) {
+    if (asPlaylist) {
       final TrackResolver.RapPlaylistAudioLoadResultHandler resultHandler = this.new RapPlaylistAudioLoadResultHandler();
       audioPlayerManager.loadItemSync(finalUrl, resultHandler);
       resolvedTracks.addAll(resultHandler.getResolvedTracks());
       failureMessage = resultHandler.getFailureMessage();
-
     } else {
       final TrackResolver.RapAudioLoadResultHandler resultHandler = this.new RapAudioLoadResultHandler();
       audioPlayerManager.loadItemSync(finalUrl, resultHandler);
       resolvedTracks.add(resultHandler.getResolvedTrack());
       failureMessage = resultHandler.getFailureMessage();
-
     }
 
     if (resolvedTracks.size() == 0 && failureMessage != null) {

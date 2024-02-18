@@ -154,11 +154,11 @@ public final class TrackScheduler {
       throw new FailedToLoadSongException("Invalid url.");
     }
 
-    final boolean isPlaylist = !blockPlaylists && (url.contains("/playlist/")
+    final boolean asPlaylist = !blockPlaylists && (url.contains("/playlist/")
         || url.contains("?list=") || url.contains("&list="));
 
     final List<AudioTrack> audioTracks = this.trackResolver.resolve(url,
-        isPlaylist);
+        asPlaylist);
 
     final AudioTrack firstTrack = audioTracks.get(0);
 
@@ -166,7 +166,7 @@ public final class TrackScheduler {
       throw new FailedToLoadSongException("Not found.");
     }
 
-    if (isPlaylist) {
+    if (asPlaylist) {
       this.store.addPlaylist(audioTracks);
     } else {
       for (AudioTrack audioTrack : audioTracks) {
@@ -226,7 +226,7 @@ public final class TrackScheduler {
    * Plays the next track in the queue if available.
    */
   private @Nullable AudioTrack playNextTrack() {
-    if (!this.store.hasPlaylist()) {
+    if (this.store.getQueueSize() > 0 || !this.store.hasPlaylist()) {
       final AudioTrack nextTrack = this.store.shift();
 
       if (nextTrack != null) {
