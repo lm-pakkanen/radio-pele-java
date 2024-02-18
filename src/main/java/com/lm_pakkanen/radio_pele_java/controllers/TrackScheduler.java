@@ -227,6 +227,10 @@ public final class TrackScheduler {
    */
   private @Nullable AudioTrack playNextTrack() {
     if (this.store.getQueueSize() > 0 || !this.store.hasPlaylist()) {
+      if (this.store.hasPlaylist()) {
+        this.store.clearPlaylist();
+      }
+
       final AudioTrack nextTrack = this.store.shift();
 
       if (nextTrack != null) {
