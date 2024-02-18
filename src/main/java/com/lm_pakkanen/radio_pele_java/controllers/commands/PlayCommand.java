@@ -71,7 +71,7 @@ public final class PlayCommand extends BaseCommand implements ICommandListener {
 
       final String url = event.getOption("url").getAsString();
       final AudioTrack addedTrack = this.trackScheduler.addToQueue(textChan,
-          url);
+          url, true);
 
       final AudioManager audioManager = event.getGuild().getAudioManager();
       audioManager.setSelfDeafened(true);

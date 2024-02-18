@@ -72,7 +72,7 @@ public final class PlayListCommand extends BaseCommand
 
       final String url = event.getOption("url").getAsString();
       final AudioTrack addedTrack = this.trackScheduler.addToQueue(textChan,
-          url);
+          url, false);
 
       final AudioManager audioManager = event.getGuild().getAudioManager();
       audioManager.setSelfDeafened(true);

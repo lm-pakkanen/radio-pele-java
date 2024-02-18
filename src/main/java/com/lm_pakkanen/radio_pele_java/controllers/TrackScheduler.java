@@ -139,21 +139,23 @@ public final class TrackScheduler {
    * Tries to add the given URL to the queue. If the action fails, throws a
    * FailedToLoadSongException.
    * 
-   * @param textChan TextChannel instance where the command was invoked.
-   * @param url      the URL of the song to add to the queue.
+   * @param textChan       TextChannel instance where the command was invoked.
+   * @param url            the URL of the song to add to the queue.
+   * @param blockPlaylists
    * @return boolean whether the action succeeeded.
    * @throws FailedToLoadSongException
    */
   public @NonNull AudioTrack addToQueue(@NonNull TextChannel textChan,
-      @Nullable String url) throws FailedToLoadSongException {
+      @Nullable String url, boolean blockPlaylists)
+      throws FailedToLoadSongException {
     this.setLastTextChannel(textChan);
 
     if (url == null || url.isEmpty()) {
       throw new FailedToLoadSongException("Invalid url.");
     }
 
-    final boolean isPlaylist = url.contains("/playlist/")
-        || url.contains("?list=") || url.contains("&list=");
+    final boolean isPlaylist = !blockPlaylists && (url.contains("/playlist/")
+        || url.contains("?list=") || url.contains("&list="));
 
     final List<AudioTrack> audioTracks = this.trackResolver.resolve(url,
         isPlaylist);
