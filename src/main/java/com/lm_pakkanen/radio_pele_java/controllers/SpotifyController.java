@@ -1,6 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -11,6 +12,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.jr.ob.JSON;
 import com.lm_pakkanen.radio_pele_java.Config;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException;
 
@@ -19,7 +21,10 @@ import se.michaelthelin.spotify.enums.ModelObjectType;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.credentials.ClientCredentials;
 import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
+import se.michaelthelin.spotify.model_objects.specification.Paging;
+import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
 import se.michaelthelin.spotify.model_objects.specification.Track;
+import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 
 @Component
 public final class SpotifyController {
@@ -53,32 +58,71 @@ public final class SpotifyController {
   }
 
   /**
-   * Resolves a url to a qualified track name (<artist< - <track name>)
+   * Resolves a url to a qualified track name (<artist> - <track name>)
    * 
    * @param url to resolve.
-   * @return qaualified track name (<artist< - <track name>).
+   * @return qaualified track name (<artist> - <track name>).
    * @throws NullPointerException
    * @throws FailedToLoadSongException
    */
-  public @NonNull String resolveQualifiedTrackName(@Nullable String url)
-      throws NullPointerException, FailedToLoadSongException {
+  public @NonNull List<String> resolveQualifiedTrackNames(@Nullable String url)
+      throws FailedToLoadSongException {
 
     if (url == null || url.isEmpty()) {
       throw new FailedToLoadSongException("URL is empty");
     }
 
-    final String trackId = getTrackIdFromUrl(url);
+    final boolean isAlbum = url.contains("/album/");
+    final boolean isPlaylist = url.contains("/playlist/");
+
+    final List<TrackSimplified> resolvedSimplifiedTracks = new ArrayList<TrackSimplified>();
 
     try {
-      final Track resolvedTrack = this.spotifyApi.getTrack(trackId).build()
-          .execute();
+      final String entityId = getEntityIdFromUrl(url);
+
+      if (isAlbum) {
+        Paging<TrackSimplified> albumSimplifiedTracks = this.spotifyApi
+            .getAlbumsTracks(entityId).limit(15).build().execute();
+
+        for (TrackSimplified albumTrack : albumSimplifiedTracks.getItems()) {
+          resolvedSimplifiedTracks.add(albumTrack);
+        }
+      } else if (isPlaylist) {
+        Paging<PlaylistTrack> playlistTracks = this.spotifyApi
+            .getPlaylistsItems(entityId).limit(15).build().execute();
+
+        for (PlaylistTrack playlistTrack : playlistTracks.getItems()) {
+          resolvedSimplifiedTracks.add(new TrackSimplified.JsonUtil()
+              .createModelObject(JSON.std.asString(playlistTrack.getTrack())));
+        }
+      } else {
+        Track track = this.spotifyApi.getTrack(entityId).build().execute();
+
+        final TrackSimplified trackSimplified = new TrackSimplified.JsonUtil()
+            .createModelObject(track.toString());
+
+        resolvedSimplifiedTracks.add(trackSimplified);
+      }
+    } catch (IOException | SpotifyWebApiException | ParseException exception) {
+      String exceptionMessage = exception.getMessage();
+
+      if (exceptionMessage == null) {
+        exceptionMessage = "Unknown exception occurred.";
+      }
+
+      throw new FailedToLoadSongException(exceptionMessage);
+    }
+
+    final List<String> qualifiedTrackNames = new ArrayList<String>();
+
+    for (TrackSimplified resolvedTrack : resolvedSimplifiedTracks) {
 
       final ArtistSimplified[] resolvedTrackArtists = resolvedTrack
           .getArtists();
 
       final ArtistSimplified artist = List.of(resolvedTrackArtists).stream()
           .filter(n -> n.getType().equals(ModelObjectType.ARTIST)).findFirst()
-          .orElse(null);
+          .orElse(resolvedTrackArtists[0]);
 
       final StringBuilder qualifiedTrackNameBuilder = new StringBuilder();
 
@@ -92,19 +136,17 @@ public final class SpotifyController {
       final String qualifiedTrackName = qualifiedTrackNameBuilder.toString();
 
       if (qualifiedTrackName == null) {
-        throw new NullPointerException("Qualified track name is null");
+        continue;
       }
 
-      return qualifiedTrackName;
-    } catch (IOException | SpotifyWebApiException | ParseException exception) {
-      String exceptionMessage = exception.getMessage();
-
-      if (exceptionMessage == null) {
-        exceptionMessage = "Unknown exception occurred.";
-      }
-
-      throw new FailedToLoadSongException(exceptionMessage);
+      qualifiedTrackNames.add(qualifiedTrackName);
     }
+
+    if (qualifiedTrackNames.size() == 0) {
+      throw new FailedToLoadSongException("Not found.");
+    }
+
+    return qualifiedTrackNames;
   }
 
   /**
@@ -115,34 +157,34 @@ public final class SpotifyController {
   }
 
   /**
-   * Gets track ID from the given URL.
+   * Gets entity ID from the given URL.
    * 
-   * @param url to get track ID from.
-   * @return track ID.
+   * @param url to get entity ID from.
+   * @return entity ID.
    * @throws FailedToLoadSongException
    */
-  private @NonNull String getTrackIdFromUrl(@NonNull String url)
+  private @NonNull String getEntityIdFromUrl(@NonNull String url)
       throws FailedToLoadSongException {
 
-    final int trackIdStartIndex = url.lastIndexOf("/") + 1;
+    final int entityIdStartIndex = url.lastIndexOf("/") + 1;
 
-    int trackIdEndIndex = url.length() - 1;
+    int entityIdEndIndex = url.length();
 
     if (url.contains("?")) {
-      trackIdEndIndex = url.indexOf("?");
+      entityIdEndIndex = url.indexOf("?");
     }
 
-    if (trackIdEndIndex <= trackIdStartIndex) {
-      throw new FailedToLoadSongException("Failed to get track ID from URL");
+    if (entityIdEndIndex <= entityIdStartIndex) {
+      throw new FailedToLoadSongException("Failed to get entity ID from URL");
     }
 
-    final String trackId = url.substring(trackIdStartIndex, trackIdEndIndex);
+    final String entityId = url.substring(entityIdStartIndex, entityIdEndIndex);
 
-    if (trackId == null || trackId.isEmpty()) {
-      throw new FailedToLoadSongException("Failed to get track ID from URL");
+    if (entityId == null || entityId.isEmpty()) {
+      throw new FailedToLoadSongException("Failed to get entity ID from URL");
     }
 
-    return trackId;
+    return entityId;
   }
 
   /**

@@ -35,32 +35,38 @@ public final class TrackResolver {
    */
   public @NonNull List<AudioTrack> resolve(@NonNull String url,
       boolean asPlaylist) throws FailedToLoadSongException {
-    String finalUrl = url;
+    final List<String> finalUrls = new ArrayList<String>();
 
     if (url.contains("spotify")) {
-      final String qualifiedTrackName = this.spotifyController
-          .resolveQualifiedTrackName(url);
-      finalUrl = "ytsearch:" + qualifiedTrackName;
+      final List<String> qualifiedTrackNames = this.spotifyController
+          .resolveQualifiedTrackNames(url);
+
+      qualifiedTrackNames.stream().forEach(qualifiedTrackName -> {
+        finalUrls.add("ytsearch:" + qualifiedTrackName);
+      });
+
+      asPlaylist = false;
+    } else {
+      finalUrls.add(url);
+    }
+
+    final TrackResolver.RapAudioLoadResultHandler resultHandler = this.new RapAudioLoadResultHandler(
+        asPlaylist);
+
+    for (final String finalUrl : finalUrls) {
+      audioPlayerManager.loadItemSync(finalUrl, resultHandler);
+    }
+
+    final String failureMessage = resultHandler.getFailureMessage();;
+
+    if (failureMessage != null) {
+      throw new FailedToLoadSongException(failureMessage);
     }
 
     final List<AudioTrack> resolvedTracks = new ArrayList<AudioTrack>();
-    String failureMessage = null;
+    resolvedTracks.addAll(resultHandler.getResolvedTracks());
 
-    if (asPlaylist) {
-      final TrackResolver.RapPlaylistAudioLoadResultHandler resultHandler = this.new RapPlaylistAudioLoadResultHandler();
-      audioPlayerManager.loadItemSync(finalUrl, resultHandler);
-      resolvedTracks.addAll(resultHandler.getResolvedTracks());
-      failureMessage = resultHandler.getFailureMessage();
-    } else {
-      final TrackResolver.RapAudioLoadResultHandler resultHandler = this.new RapAudioLoadResultHandler();
-      audioPlayerManager.loadItemSync(finalUrl, resultHandler);
-      resolvedTracks.add(resultHandler.getResolvedTrack());
-      failureMessage = resultHandler.getFailureMessage();
-    }
-
-    if (resolvedTracks.size() == 0 && failureMessage != null) {
-      throw new FailedToLoadSongException(failureMessage);
-    } else if (resolvedTracks.size() == 0) {
+    if (resolvedTracks.size() == 0) {
       throw new FailedToLoadSongException("Not found.");
     }
 
@@ -72,100 +78,20 @@ public final class TrackResolver {
    */
   public class RapAudioLoadResultHandler implements AudioLoadResultHandler {
 
+    final private boolean asPlaylist;
     private boolean isReady = false;
-    private @Nullable AudioTrack resolvedTrack;
+    private final List<AudioTrack> resolvedTracks = new ArrayList<AudioTrack>();
     private @Nullable String failureMessage;
 
-    public RapAudioLoadResultHandler() {}
+    public RapAudioLoadResultHandler(boolean asPlaylist) {
+      this.asPlaylist = asPlaylist;
+    }
 
     /**
      * Resolves track.
      */
     @Override
     public void trackLoaded(AudioTrack track) {
-      this.resolvedTrack = track;
-      this.isReady = true;
-    }
-
-    /**
-     * Resolves playlist to it's selected track.
-     */
-    @Override
-    public void playlistLoaded(AudioPlaylist playlist) {
-      AudioTrack selectedTrack = playlist.getSelectedTrack();
-
-      if (selectedTrack == null) {
-        selectedTrack = playlist.getTracks().get(0);
-      }
-
-      if (selectedTrack == null) {
-        this.failureMessage = "No tracks found.";
-      } else {
-        this.resolvedTrack = selectedTrack;
-      }
-
-      this.isReady = true;
-    }
-
-    /**
-     * Sets failure message.
-     */
-    @Override
-    public void noMatches() {
-      this.failureMessage = "Song not found.";
-      this.isReady = true;
-    }
-
-    /**
-     * Sets failure message.
-     */
-    @Override
-    public void loadFailed(FriendlyException exception) {
-      exception.printStackTrace();
-      this.failureMessage = "Could not load track.";
-      this.isReady = true;
-    }
-
-    /**
-     * @return whether resolving is ready.
-     */
-    public boolean getIsReady() {
-      return this.isReady;
-    }
-
-    /**
-     * @return resolved track. Null if failure was encountered.
-     */
-    public @Nullable AudioTrack getResolvedTrack() {
-      return this.resolvedTrack;
-    }
-
-    /**
-     * @return failure message. Null if no failure was encountered.
-     */
-    public @Nullable String getFailureMessage() {
-      return this.failureMessage;
-    }
-  }
-
-  /**
-   * Handles the result of the audio load.
-   */
-  public class RapPlaylistAudioLoadResultHandler
-      implements AudioLoadResultHandler {
-
-    private boolean isReady = false;
-    private @Nullable List<AudioTrack> resolvedTracks;
-    private @Nullable String failureMessage;
-
-    public RapPlaylistAudioLoadResultHandler() {}
-
-    /**
-     * Resolves track.
-     */
-    @Override
-    public void trackLoaded(AudioTrack track) {
-      this.resolvedTracks = new ArrayList<AudioTrack>();
       this.resolvedTracks.add(track);
       this.isReady = true;
     }
@@ -175,7 +101,22 @@ public final class TrackResolver {
      */
     @Override
     public void playlistLoaded(AudioPlaylist playlist) {
-      this.resolvedTracks = playlist.getTracks();
+      final List<AudioTrack> playlistTracks = playlist.getTracks();
+
+      if (playlist.isSearchResult()) {
+        this.resolvedTracks.add(playlist.getTracks().get(0));
+      } else if (this.asPlaylist) {
+        this.resolvedTracks.addAll(playlist.getTracks());
+      } else {
+        AudioTrack audioTrack = playlist.getSelectedTrack();
+
+        if (audioTrack == null) {
+          audioTrack = playlistTracks.get(0);
+        }
+
+        playlistTracks.add(audioTrack);
+      }
+
       this.isReady = true;
     }
 

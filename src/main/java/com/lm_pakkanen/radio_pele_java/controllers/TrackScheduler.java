@@ -154,8 +154,9 @@ public final class TrackScheduler {
       throw new FailedToLoadSongException("Invalid url.");
     }
 
-    final boolean asPlaylist = !blockPlaylists && (url.contains("/playlist/")
-        || url.contains("?list=") || url.contains("&list="));
+    final boolean asPlaylist = !blockPlaylists
+        && (url.contains("/playlist/") || url.contains("/album/")
+            || url.contains("?list=") || url.contains("&list="));
 
     final List<AudioTrack> audioTracks = this.trackResolver.resolve(url,
         asPlaylist);

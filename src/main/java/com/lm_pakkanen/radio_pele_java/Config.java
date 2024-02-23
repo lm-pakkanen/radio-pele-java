@@ -28,9 +28,6 @@ public class Config {
   @Value("${REGEN_COMMANDS}")
   public @NonNull Boolean REGEN_COMMANDS = false;
 
-  @Value("${BOT_CLIENT_ID}")
-  public @NonNull String BOT_CLIENT_ID = "";
-
   @Value("${BOT_TOKEN}")
   public @NonNull String BOT_TOKEN = "";
 
