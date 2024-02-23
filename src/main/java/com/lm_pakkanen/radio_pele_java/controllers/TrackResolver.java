@@ -101,7 +101,6 @@ public final class TrackResolver {
      */
     @Override
     public void playlistLoaded(AudioPlaylist playlist) {
-      final List<AudioTrack> playlistTracks = playlist.getTracks();
 
       if (playlist.isSearchResult()) {
         this.resolvedTracks.add(playlist.getTracks().get(0));
@@ -111,10 +110,10 @@ public final class TrackResolver {
         AudioTrack audioTrack = playlist.getSelectedTrack();
 
         if (audioTrack == null) {
-          audioTrack = playlistTracks.get(0);
+          audioTrack = playlist.getTracks().get(0);
         }
 
-        playlistTracks.add(audioTrack);
+        this.resolvedTracks.add(audioTrack);
       }
 
       this.isReady = true;
