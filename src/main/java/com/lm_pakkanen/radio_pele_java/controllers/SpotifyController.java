@@ -99,7 +99,7 @@ public final class SpotifyController {
         Track track = this.spotifyApi.getTrack(entityId).build().execute();
 
         final TrackSimplified trackSimplified = new TrackSimplified.JsonUtil()
-            .createModelObject(track.toString());
+            .createModelObject(JSON.std.asString(track));
 
         resolvedSimplifiedTracks.add(trackSimplified);
       }
