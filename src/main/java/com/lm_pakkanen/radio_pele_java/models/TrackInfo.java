@@ -27,12 +27,12 @@ public final class TrackInfo {
       trackArtist = "Unknown artist";
     }
 
-    StringBuilder qualifiedNameBuilder = new StringBuilder();
+    final StringBuilder qualifiedNameBuilder = new StringBuilder();
     qualifiedNameBuilder.append(trackArtist);
     qualifiedNameBuilder.append(" - ");
     qualifiedNameBuilder.append(trackTitle);
 
-    String qualifiedName = qualifiedNameBuilder.toString();
+    final String qualifiedName = qualifiedNameBuilder.toString();
 
     if (qualifiedName == null) {
       throw new NullPointerException("Qualified name is null");
@@ -79,17 +79,26 @@ public final class TrackInfo {
    * @param durationMs duration in milliseconds.
    * @return formatted duration string.
    */
-  private static @NonNull String formatDuration(long durationMs) {
+  public static @NonNull String formatDuration(long durationMs) {
     final long totalDurationSeconds = durationMs / 1000;
 
     final long durationMinutes = Math.floorDiv(totalDurationSeconds, 60);
     final long durationSeconds = Math.floorMod(totalDurationSeconds, 60);
 
-    final String formattedDuration = String.format("%dmin%ds", durationMinutes,
-        durationSeconds);
+    final StringBuilder formattedDurationBuilder = new StringBuilder();
 
-    if (formattedDuration == null) {
-      throw new NullPointerException("Formatted duration is null");
+    if (durationMinutes > 0) {
+      formattedDurationBuilder.append(String.format("%dmin", durationMinutes));
+    }
+
+    if (durationSeconds > 0) {
+      formattedDurationBuilder.append(String.format("%ds", durationSeconds));
+    }
+
+    String formattedDuration = formattedDurationBuilder.toString();
+
+    if (formattedDuration.isEmpty()) {
+      formattedDuration = "<n/a>";
     }
 
     return formattedDuration;
