@@ -88,12 +88,12 @@ public final class PlayListCommand extends BaseCommand
         this.trackScheduler.play();
       }
 
-      MailMan.replyInteractionEmbed(event,
+      MailMan.replyInteraction(event,
           new SongAddedEmbed(addedTrack, this.trackScheduler.getStore())
               .getEmbed());
     } catch (InvalidChannelException | NotInChannelException
         | FailedToLoadSongException exception) {
-      MailMan.replyInteractionEmbed(event,
+      MailMan.replyInteraction(event,
           new ExceptionEmbed(exception).getEmbed());
     }
   }

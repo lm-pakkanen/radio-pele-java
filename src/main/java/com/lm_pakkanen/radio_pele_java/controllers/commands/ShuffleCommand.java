@@ -56,10 +56,9 @@ public final class ShuffleCommand extends BaseCommand
     try {
       super.getTextChan(event);
       this.trackScheduler.shuffle();
-      MailMan.replyInteractionEmbed(event, new QueueShuffledEmbed().getEmbed());
+      MailMan.replyInteraction(event, new QueueShuffledEmbed().getEmbed());
     } catch (InvalidChannelException exception) {
-      MailMan.replyInteractionEmbed(event,
-          new ExceptionEmbed(exception).getEmbed());
+      MailMan.replyInteraction(event, new ExceptionEmbed(exception).getEmbed());
     }
   }
 }

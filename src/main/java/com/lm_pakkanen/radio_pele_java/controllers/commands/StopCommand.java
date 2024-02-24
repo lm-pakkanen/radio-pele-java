@@ -66,10 +66,9 @@ public final class StopCommand extends BaseCommand implements ICommandListener {
         tryLeaveVoiceChan(event, audioManager);
       }
 
-      MailMan.replyInteractionEmbed(event, new StopEmbed().getEmbed());
+      MailMan.replyInteraction(event, new StopEmbed().getEmbed());
     } catch (InvalidChannelException exception) {
-      MailMan.replyInteractionEmbed(event,
-          new ExceptionEmbed(exception).getEmbed());
+      MailMan.replyInteraction(event, new ExceptionEmbed(exception).getEmbed());
     }
   }
 

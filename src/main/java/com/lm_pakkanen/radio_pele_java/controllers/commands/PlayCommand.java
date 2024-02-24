@@ -87,13 +87,12 @@ public final class PlayCommand extends BaseCommand implements ICommandListener {
         this.trackScheduler.play();
       }
 
-      MailMan.replyInteractionEmbed(event,
+      MailMan.replyInteraction(event,
           new SongAddedEmbed(addedTrack, this.trackScheduler.getStore())
               .getEmbed());
     } catch (InvalidChannelException | NotInChannelException
         | FailedToLoadSongException exception) {
-      MailMan.replyInteractionEmbed(event,
-          new ExceptionEmbed(exception).getEmbed());
+      MailMan.replyInteraction(event, new ExceptionEmbed(exception).getEmbed());
     }
   }
 

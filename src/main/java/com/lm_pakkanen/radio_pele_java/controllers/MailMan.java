@@ -15,7 +15,7 @@ public final class MailMan {
    * @param textChan to reply to.
    * @param message  to reply with.
    */
-  public static void sendMessage(@Nullable TextChannel textChan,
+  public static void send(@Nullable TextChannel textChan,
       @NonNull String message) {
     if (textChan == null) {
       return;
@@ -30,7 +30,7 @@ public final class MailMan {
    * @param textChan to reply to.
    * @param embed    to reply with.
    */
-  public static void sendEmbed(@Nullable TextChannel textChan,
+  public static void send(@Nullable TextChannel textChan,
       @NonNull MessageEmbed embed) {
     if (textChan == null) {
       return;
@@ -46,7 +46,7 @@ public final class MailMan {
    * @param event   to reply to.
    * @param message to reply with.
    */
-  public static void replyInteractionMessage(
+  public static void replyInteraction(
       @NonNull SlashCommandInteractionEvent event, @NonNull String message) {
     if (event.isAcknowledged()) {
       event.getHook().editOriginal(message).queue();
@@ -62,7 +62,7 @@ public final class MailMan {
    * @param event to reply to.
    * @param embed to reply with.
    */
-  public static void replyInteractionEmbed(
+  public static void replyInteraction(
       @NonNull SlashCommandInteractionEvent event,
       @NonNull MessageEmbed embed) {
     if (event.isAcknowledged()) {

@@ -67,18 +67,17 @@ public final class SkipCommand extends BaseCommand implements ICommandListener {
       TextChannel textChan = super.getTextChan(event);
       AudioTrack nextTrack = this.trackScheduler.skipCurrentSong();
 
-      MailMan.replyInteractionEmbed(event, new SongSkippedEmbed().getEmbed());
+      MailMan.replyInteraction(event, new SongSkippedEmbed().getEmbed());
 
       if (nextTrack == null) {
-        MailMan.sendEmbed(textChan, new QueueEmptyEmbed().getEmbed());
+        MailMan.send(textChan, new QueueEmptyEmbed().getEmbed());
       } else {
-        MailMan.sendEmbed(textChan,
+        MailMan.send(textChan,
             new CurrentSongEmbed(nextTrack, store).getEmbed());
       }
 
     } catch (InvalidChannelException | IllegalStateException exception) {
-      MailMan.replyInteractionEmbed(event,
-          new ExceptionEmbed(exception).getEmbed());
+      MailMan.replyInteraction(event, new ExceptionEmbed(exception).getEmbed());
     }
   }
 }

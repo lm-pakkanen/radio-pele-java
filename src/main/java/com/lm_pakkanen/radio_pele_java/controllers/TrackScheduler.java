@@ -106,7 +106,7 @@ public final class TrackScheduler {
     final AudioTrack nextTrack = this.playNextTrack();
 
     if (nextTrack == null && lastTextChan != null) {
-      MailMan.sendEmbed(lastTextChan, new QueueEmptyEmbed().getEmbed());
+      MailMan.send(lastTextChan, new QueueEmptyEmbed().getEmbed());
       return;
     } else if (nextTrack == null) {
       return;
@@ -115,7 +115,7 @@ public final class TrackScheduler {
     this.audioPlayer.playTrack(nextTrack);
 
     if (lastTextChan != null) {
-      MailMan.sendEmbed(lastTextChan,
+      MailMan.send(lastTextChan,
           new CurrentSongEmbed(nextTrack, this.store).getEmbed());
     }
   }
