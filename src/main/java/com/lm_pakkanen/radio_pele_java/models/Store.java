@@ -15,7 +15,7 @@ import jakarta.annotation.Nonnull;
 
 public final class Store {
   private final @Nonnull List<AudioTrack> playListQueue = new ArrayList<AudioTrack>(
-      50);
+      15);
   private final @NonNull BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<AudioTrack>();
 
   /**
@@ -47,24 +47,6 @@ public final class Store {
    */
   public @Nullable AudioTrack shift() {
     return this.queue.poll();
-  }
-
-  /**
-   * Gets and removes the first track from the queue.
-   * 
-   * @param async whether to wait for the track to be available.
-   * @return the first track from the queue or null if queue is empty.
-   */
-  public @Nullable AudioTrack shift(boolean async) {
-    if (!async) {
-      return this.shift();
-    }
-
-    try {
-      return this.queue.take();
-    } catch (InterruptedException exception) {
-      return null;
-    }
   }
 
   /**
