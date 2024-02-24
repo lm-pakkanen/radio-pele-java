@@ -80,7 +80,7 @@ public final class TrackResolver {
 
     final private boolean asPlaylist;
     private boolean isReady = false;
-    private final List<AudioTrack> resolvedTracks = new ArrayList<AudioTrack>();
+    private final @NonNull List<AudioTrack> resolvedTracks = new ArrayList<AudioTrack>();
     private @Nullable String failureMessage;
 
     public RapAudioLoadResultHandler(boolean asPlaylist) {
@@ -124,7 +124,12 @@ public final class TrackResolver {
      */
     @Override
     public void noMatches() {
-      this.failureMessage = "Playlist not found.";
+      if (this.asPlaylist) {
+        this.failureMessage = "Playlist not found.";
+      } else {
+        this.failureMessage = "Song not found.";
+      }
+
       this.isReady = true;
     }
 
@@ -134,7 +139,19 @@ public final class TrackResolver {
     @Override
     public void loadFailed(FriendlyException exception) {
       exception.printStackTrace();
-      this.failureMessage = "Could not load playlist.";
+
+      final StringBuilder failureMessageBuilder = new StringBuilder();
+
+      failureMessageBuilder.append(exception.getMessage());
+      failureMessageBuilder.append(".");
+
+      if (this.asPlaylist) {
+        failureMessageBuilder.insert(0, "Could not load playlist: ");
+      } else {
+        failureMessageBuilder.insert(0, "Could not load song: ");
+      }
+
+      this.failureMessage = failureMessageBuilder.toString();
       this.isReady = true;
     }
 
