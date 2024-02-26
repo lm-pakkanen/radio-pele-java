@@ -22,7 +22,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
 @Configuration
 @ComponentScan("com.lm_pakkanen.radio_pele_java.controllers")
-@PropertySource("classpath:application.yml")
+@PropertySource("classpath:application.properties")
 public class Config {
 
   @Value("${REGEN_COMMANDS}")
