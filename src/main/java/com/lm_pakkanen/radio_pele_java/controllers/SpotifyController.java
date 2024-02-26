@@ -47,7 +47,7 @@ public final class SpotifyController {
     spotifyApiBuilder.setClientId(this.config.SPOTIFY_CLIENT_ID);
     spotifyApiBuilder.setClientSecret(this.config.SPOTIFY_CLIENT_SECRET);
 
-    SpotifyApi spotifyApi = spotifyApiBuilder.build();
+    final SpotifyApi spotifyApi = spotifyApiBuilder.build();
 
     if (spotifyApi == null) {
       throw new NullPointerException("Spotify API is null");
@@ -75,7 +75,7 @@ public final class SpotifyController {
     final boolean isAlbum = url.contains("/album/");
     final boolean isPlaylist = url.contains("/playlist/");
 
-    final List<TrackSimplified> resolvedSimplifiedTracks = new ArrayList<TrackSimplified>();
+    final List<TrackSimplified> resolvedSimplifiedTracks = new ArrayList<>();
 
     try {
       final String entityId = getEntityIdFromUrl(url);
@@ -113,7 +113,7 @@ public final class SpotifyController {
       throw new FailedToLoadSongException(exceptionMessage);
     }
 
-    final List<String> qualifiedTrackNames = new ArrayList<String>();
+    final List<String> qualifiedTrackNames = new ArrayList<>();
 
     for (TrackSimplified resolvedTrack : resolvedSimplifiedTracks) {
 

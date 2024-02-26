@@ -50,7 +50,7 @@ public final class TrackResolver {
       finalUrls.add(url);
     }
 
-    final TrackResolver.RapAudioLoadResultHandler resultHandler = this.new RapAudioLoadResultHandler(
+    final TrackResolver.RapAudioLoadResultHandler resultHandler = new RapAudioLoadResultHandler(
         asPlaylist);
 
     for (final String finalUrl : finalUrls) {
@@ -63,7 +63,7 @@ public final class TrackResolver {
       throw new FailedToLoadSongException(failureMessage);
     }
 
-    final List<AudioTrack> resolvedTracks = new ArrayList<AudioTrack>();
+    final List<AudioTrack> resolvedTracks = new ArrayList<>();
     resolvedTracks.addAll(resultHandler.getResolvedTracks());
 
     if (resolvedTracks.size() == 0) {
@@ -80,7 +80,7 @@ public final class TrackResolver {
 
     final private boolean asPlaylist;
     private boolean isReady = false;
-    private final @NonNull List<AudioTrack> resolvedTracks = new ArrayList<AudioTrack>();
+    private final @NonNull List<AudioTrack> resolvedTracks = new ArrayList<>();
     private @Nullable String failureMessage;
 
     public RapAudioLoadResultHandler(boolean asPlaylist) {

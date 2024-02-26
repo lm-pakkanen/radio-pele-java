@@ -18,7 +18,7 @@ public final class CommandBuilder {
    */
   public CommandBuilder(@NonNull List<ICommandListener> commandListeners) {
     this.commandListeners = commandListeners;
-    this.slashCommands = new ArrayList<SlashCommandData>();
+    this.slashCommands = new ArrayList<>();
   }
 
   /**

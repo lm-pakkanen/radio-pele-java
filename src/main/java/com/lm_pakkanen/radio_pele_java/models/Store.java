@@ -14,9 +14,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import jakarta.annotation.Nonnull;
 
 public final class Store {
-  private final @Nonnull List<AudioTrack> playListQueue = new ArrayList<AudioTrack>(
-      15);
-  private final @NonNull BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<AudioTrack>();
+  private final @Nonnull List<AudioTrack> playListQueue = new ArrayList<>(15);
+  private final @NonNull BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
 
   /**
    * Adds a track to the queue.
@@ -98,8 +97,7 @@ public final class Store {
    * Shuffles the queue.
    */
   public void shuffle() {
-    final List<AudioTrack> shuffledTracks = new ArrayList<AudioTrack>(
-        this.queue);
+    final List<AudioTrack> shuffledTracks = new ArrayList<>(this.queue);
 
     Collections.shuffle(shuffledTracks);
 
@@ -115,8 +113,7 @@ public final class Store {
       return;
     }
 
-    final List<AudioTrack> shuffledUrls = new ArrayList<AudioTrack>(
-        this.playListQueue);
+    final List<AudioTrack> shuffledUrls = new ArrayList<>(this.playListQueue);
 
     Collections.shuffle(shuffledUrls);
 
