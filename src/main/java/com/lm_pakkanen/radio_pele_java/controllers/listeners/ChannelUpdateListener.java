@@ -3,6 +3,7 @@ package com.lm_pakkanen.radio_pele_java.controllers.listeners;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 @Component
+@Lazy
 public class ChannelUpdateListener implements IEventListener {
 
   private final @NonNull TrackScheduler trackScheduler;

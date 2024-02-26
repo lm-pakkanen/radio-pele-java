@@ -7,6 +7,7 @@ import java.util.TimerTask;
 
 import org.apache.hc.core5.http.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,7 @@ import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 
 @Component
+@Lazy
 public final class SpotifyController {
   private final @NonNull Config config;
   private final @NonNull SpotifyApi spotifyApi;

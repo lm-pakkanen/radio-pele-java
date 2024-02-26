@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import jakarta.annotation.Nonnull;
 
 @Component
+@Lazy
 public final class Store {
   private final @Nonnull List<AudioTrack> playListQueue = new ArrayList<>(1);
   private final @NonNull BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();

@@ -1,6 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 @Component
+@Lazy
 public final class TrackScheduler extends AudioEventAdapter {
 
   private static final int FRAME_BUFFER_DURATION_MS = 30_000;

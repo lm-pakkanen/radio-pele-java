@@ -1,6 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers.commands;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 @Component
+@Lazy
 public final class StopCommand extends BaseCommand implements ICommandListener {
 
   private final @NonNull TrackScheduler trackScheduler;

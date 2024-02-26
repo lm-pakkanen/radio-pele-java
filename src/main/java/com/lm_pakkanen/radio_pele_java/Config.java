@@ -21,7 +21,10 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
 @Configuration
-@ComponentScan("com.lm_pakkanen.radio_pele_java.controllers")
+@ComponentScan(basePackages = {
+    "com.lm_pakkanen.radio_pele_java.controllers",
+    "com.lm_pakkanen.radio_pele_java.models"
+})
 @PropertySource("classpath:application.properties")
 public class Config {
 

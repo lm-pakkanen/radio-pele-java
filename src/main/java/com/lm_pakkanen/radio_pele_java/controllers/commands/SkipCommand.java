@@ -1,6 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers.commands;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
 @Component
+@Lazy
 public final class SkipCommand extends BaseCommand implements ICommandListener {
 
   private final @NonNull Store store;
