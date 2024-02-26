@@ -1,7 +1,5 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -168,10 +166,10 @@ public final class TrackScheduler extends AudioEventAdapter {
         && (url.contains("/playlist/") || url.contains("/album/")
             || url.contains("?list=") || url.contains("&list="));
 
-    final List<AudioTrack> audioTracks = this.trackResolver.resolve(url,
+    final AudioTrack[] audioTracks = this.trackResolver.resolve(url,
         asPlaylist);
 
-    final AudioTrack firstTrack = audioTracks.get(0);
+    final AudioTrack firstTrack = audioTracks[0];
 
     if (firstTrack == null) {
       throw new FailedToLoadSongException("Not found.");
@@ -181,7 +179,10 @@ public final class TrackScheduler extends AudioEventAdapter {
       this.store.addPlaylist(audioTracks);
     } else {
       for (AudioTrack audioTrack : audioTracks) {
-        this.store.add(audioTrack);
+        final boolean addResult = this.store.add(audioTrack);
+        if (addResult == false) {
+        }
+        throw new FailedToLoadSongException("Not found.");
       }
     }
 

@@ -5,9 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +14,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class StoreTest {
+  private static final AudioTrack audioTrackMock = mock(AudioTrack.class);
+
   private Store store;
 
   @BeforeEach
@@ -30,7 +29,7 @@ public class StoreTest {
     assertEquals(0, this.store.getQueueSize());
     assertEquals(0, this.store.getPlaylistQueueSize());
 
-    AudioTrack track = mock(AudioTrack.class);
+    final AudioTrack track = StoreTest.audioTrackMock;
     this.store.add(track);
 
     assertEquals(1, this.store.getQueueSize());
@@ -43,9 +42,10 @@ public class StoreTest {
     assertEquals(0, this.store.getQueueSize());
     assertEquals(0, this.store.getPlaylistQueueSize());
 
-    List<AudioTrack> tracks = new ArrayList<>();
-    tracks.add(mock(AudioTrack.class));
-    tracks.add(mock(AudioTrack.class));
+    final AudioTrack[] tracks = new AudioTrack[] {
+        StoreTest.audioTrackMock, StoreTest.audioTrackMock
+    };
+
     this.store.addPlaylist(tracks);
 
     assertEquals(0, this.store.getQueueSize());
@@ -58,13 +58,16 @@ public class StoreTest {
     assertEquals(0, this.store.getQueueSize());
     assertEquals(0, this.store.getPlaylistQueueSize());
 
-    List<AudioTrack> tracks = new ArrayList<>();
-    tracks.add(mock(AudioTrack.class));
+    final AudioTrack[] tracks = new AudioTrack[] {
+        StoreTest.audioTrackMock
+    };
+
+    final AudioTrack[] tracks2 = new AudioTrack[] {
+        StoreTest.audioTrackMock, StoreTest.audioTrackMock
+    };
+
     this.store.addPlaylist(tracks);
 
-    List<AudioTrack> tracks2 = new ArrayList<>();
-    tracks2.add(mock(AudioTrack.class));
-    tracks2.add(mock(AudioTrack.class));
     this.store.addPlaylist(tracks2);
 
     assertEquals(0, this.store.getQueueSize());
@@ -75,7 +78,7 @@ public class StoreTest {
   @DisplayName("Test shift")
   public void testShift() {
     final AudioTrack track = this.store.shift();
-    this.store.add(mock(AudioTrack.class));
+    this.store.add(StoreTest.audioTrackMock);
     final AudioTrack track2 = this.store.shift();
     assertNull(track);
     assertNotNull(track2);
@@ -85,10 +88,8 @@ public class StoreTest {
   @DisplayName("Test shift playlist")
   public void testShiftPlaylist() {
     final AudioTrack track = this.store.shiftPlaylist();
-    this.store.addPlaylist(new ArrayList<>() {
-      {
-        add(mock(AudioTrack.class));
-      }
+    this.store.addPlaylist(new AudioTrack[] {
+        StoreTest.audioTrackMock
     });
     final AudioTrack track2 = this.store.shiftPlaylist();
     assertNull(track);
@@ -99,7 +100,7 @@ public class StoreTest {
   @DisplayName("Test clearing queue")
   public void testClearingQueue() {
     assertEquals(0, this.store.getQueueSize());
-    this.store.add(mock(AudioTrack.class));
+    this.store.add(StoreTest.audioTrackMock);
     assertEquals(1, this.store.getQueueSize());
     this.store.clear();
     assertEquals(0, this.store.getQueueSize());
@@ -109,10 +110,8 @@ public class StoreTest {
   @DisplayName("Test clearing playlist queue")
   public void testClearingPlaylistQueue() {
     assertEquals(0, this.store.getPlaylistQueueSize());
-    this.store.addPlaylist(new ArrayList<>() {
-      {
-        add(mock(AudioTrack.class));
-      }
+    this.store.addPlaylist(new AudioTrack[] {
+        StoreTest.audioTrackMock
     });
     assertEquals(1, this.store.getPlaylistQueueSize());
     this.store.clearPlaylist();

@@ -1,6 +1,5 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,21 +32,22 @@ public final class TrackResolver {
    * @return resolved track.
    * @throws FailedToLoadSongException
    */
-  public @NonNull List<AudioTrack> resolve(@NonNull String url,
-      boolean asPlaylist) throws FailedToLoadSongException {
-    final List<String> finalUrls = new ArrayList<String>();
+  public @NonNull AudioTrack[] resolve(@NonNull String url, boolean asPlaylist)
+      throws FailedToLoadSongException {
+    final int capacity = asPlaylist ? 15 : 1;
+    final String[] finalUrls = new String[capacity];
 
     if (url.contains("spotify")) {
-      final List<String> qualifiedTrackNames = this.spotifyController
+      final String[] qualifiedTrackNames = this.spotifyController
           .resolveQualifiedTrackNames(url);
 
-      qualifiedTrackNames.stream().forEach(qualifiedTrackName -> {
-        finalUrls.add("ytsearch:" + qualifiedTrackName);
-      });
+      for (int i = 0; i < qualifiedTrackNames.length; i++) {
+        finalUrls[i] = "ytsearch:" + qualifiedTrackNames[i];
+      }
 
       asPlaylist = false;
     } else {
-      finalUrls.add(url);
+      finalUrls[0] = url;
     }
 
     final TrackResolver.RapAudioLoadResultHandler resultHandler = new RapAudioLoadResultHandler(
@@ -63,10 +63,9 @@ public final class TrackResolver {
       throw new FailedToLoadSongException(failureMessage);
     }
 
-    final List<AudioTrack> resolvedTracks = new ArrayList<>();
-    resolvedTracks.addAll(resultHandler.getResolvedTracks());
+    final AudioTrack[] resolvedTracks = resultHandler.getResolvedTracks();
 
-    if (resolvedTracks.size() == 0) {
+    if (resolvedTracks.length == 0) {
       throw new FailedToLoadSongException("Not found.");
     }
 
@@ -78,13 +77,16 @@ public final class TrackResolver {
    */
   public class RapAudioLoadResultHandler implements AudioLoadResultHandler {
 
-    final private boolean asPlaylist;
+    private final boolean asPlaylist;
+    private @NonNull AudioTrack[] resolvedTracks;
+
     private boolean isReady = false;
-    private final @NonNull List<AudioTrack> resolvedTracks = new ArrayList<>();
     private @Nullable String failureMessage;
 
     public RapAudioLoadResultHandler(boolean asPlaylist) {
       this.asPlaylist = asPlaylist;
+      int initialCap = this.asPlaylist ? 15 : 1;
+      this.resolvedTracks = new AudioTrack[initialCap];
     }
 
     /**
@@ -92,7 +94,7 @@ public final class TrackResolver {
      */
     @Override
     public void trackLoaded(AudioTrack track) {
-      this.resolvedTracks.add(track);
+      this.resolvedTracks[0] = track;
       this.isReady = true;
     }
 
@@ -103,9 +105,18 @@ public final class TrackResolver {
     public void playlistLoaded(AudioPlaylist playlist) {
 
       if (playlist.isSearchResult()) {
-        this.resolvedTracks.add(playlist.getTracks().get(0));
+        this.resolvedTracks[0] = playlist.getTracks().get(0);
       } else if (this.asPlaylist) {
-        this.resolvedTracks.addAll(playlist.getTracks());
+        final List<AudioTrack> audioTracks = playlist.getTracks();
+
+        final AudioTrack[] audioTracksArray = audioTracks
+            .toArray(new AudioTrack[0]);
+
+        if (audioTracksArray == null) {
+          throw new NullPointerException();
+        }
+
+        this.resolvedTracks = audioTracksArray;
       } else {
         AudioTrack audioTrack = playlist.getSelectedTrack();
 
@@ -113,7 +124,7 @@ public final class TrackResolver {
           audioTrack = playlist.getTracks().get(0);
         }
 
-        this.resolvedTracks.add(audioTrack);
+        this.resolvedTracks[0] = audioTrack;
       }
 
       this.isReady = true;
@@ -165,7 +176,7 @@ public final class TrackResolver {
     /**
      * @return resolved track. Null if failure was encountered.
      */
-    public @Nullable List<AudioTrack> getResolvedTracks() {
+    public @NonNull AudioTrack[] getResolvedTracks() {
       return this.resolvedTracks;
     }
 

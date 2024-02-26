@@ -1,7 +1,6 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -65,7 +64,7 @@ public final class SpotifyController {
    * @throws NullPointerException
    * @throws FailedToLoadSongException
    */
-  public @NonNull List<String> resolveQualifiedTrackNames(@Nullable String url)
+  public @NonNull String[] resolveQualifiedTrackNames(@Nullable String url)
       throws FailedToLoadSongException {
 
     if (url == null || url.isEmpty()) {
@@ -75,33 +74,39 @@ public final class SpotifyController {
     final boolean isAlbum = url.contains("/album/");
     final boolean isPlaylist = url.contains("/playlist/");
 
-    final List<TrackSimplified> resolvedSimplifiedTracks = new ArrayList<>();
+    final int capacity = isAlbum || isPlaylist ? 15 : 1;
+
+    TrackSimplified[] resolvedSimplifiedTracks = new TrackSimplified[capacity];
 
     try {
       final String entityId = getEntityIdFromUrl(url);
 
       if (isAlbum) {
-        Paging<TrackSimplified> albumSimplifiedTracks = this.spotifyApi
+        final Paging<TrackSimplified> albumSimplifiedTracks = this.spotifyApi
             .getAlbumsTracks(entityId).limit(15).build().execute();
 
-        for (TrackSimplified albumTrack : albumSimplifiedTracks.getItems()) {
-          resolvedSimplifiedTracks.add(albumTrack);
-        }
+        resolvedSimplifiedTracks = albumSimplifiedTracks.getItems();
+
       } else if (isPlaylist) {
-        Paging<PlaylistTrack> playlistTracks = this.spotifyApi
-            .getPlaylistsItems(entityId).limit(15).build().execute();
+        final PlaylistTrack[] playlistTrackItems = this.spotifyApi
+            .getPlaylistsItems(entityId).limit(15).build().execute().getItems();
 
-        for (PlaylistTrack playlistTrack : playlistTracks.getItems()) {
-          resolvedSimplifiedTracks.add(new TrackSimplified.JsonUtil()
-              .createModelObject(JSON.std.asString(playlistTrack.getTrack())));
+        for (int i = 0; i < playlistTrackItems.length; i++) {
+          final String playlistTrackItemString = JSON.std
+              .asString(playlistTrackItems[i].getTrack());
+
+          resolvedSimplifiedTracks[i] = new TrackSimplified.JsonUtil()
+              .createModelObject(playlistTrackItemString);
         }
+
       } else {
-        Track track = this.spotifyApi.getTrack(entityId).build().execute();
+        final Track track = this.spotifyApi.getTrack(entityId).build()
+            .execute();
 
-        final TrackSimplified trackSimplified = new TrackSimplified.JsonUtil()
-            .createModelObject(JSON.std.asString(track));
+        final String trackAsString = JSON.std.asString(track);
 
-        resolvedSimplifiedTracks.add(trackSimplified);
+        resolvedSimplifiedTracks[0] = new TrackSimplified.JsonUtil()
+            .createModelObject(trackAsString);
       }
     } catch (IOException | SpotifyWebApiException | ParseException exception) {
       String exceptionMessage = exception.getMessage();
@@ -113,9 +118,10 @@ public final class SpotifyController {
       throw new FailedToLoadSongException(exceptionMessage);
     }
 
-    final List<String> qualifiedTrackNames = new ArrayList<>();
+    final String[] qualifiedTrackNames = new String[capacity];
 
-    for (TrackSimplified resolvedTrack : resolvedSimplifiedTracks) {
+    for (int i = 0; i < resolvedSimplifiedTracks.length; i++) {
+      final TrackSimplified resolvedTrack = resolvedSimplifiedTracks[i];
 
       final ArtistSimplified[] resolvedTrackArtists = resolvedTrack
           .getArtists();
@@ -139,10 +145,11 @@ public final class SpotifyController {
         continue;
       }
 
-      qualifiedTrackNames.add(qualifiedTrackName);
+      qualifiedTrackNames[i] = qualifiedTrackName;
+
     }
 
-    if (qualifiedTrackNames.size() == 0) {
+    if (qualifiedTrackNames.length == 0) {
       throw new FailedToLoadSongException("Not found.");
     }
 

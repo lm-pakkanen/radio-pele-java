@@ -13,9 +13,11 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
+import net.dv8tion.jda.api.managers.AudioManager;
 
 @Component
 public class ChannelUpdateListener implements IEventListener {
+
   private final @NonNull TrackScheduler trackScheduler;
 
   public ChannelUpdateListener(
@@ -38,8 +40,11 @@ public class ChannelUpdateListener implements IEventListener {
     final AudioChannelUnion chanUserLeftFrom = guildVoiceUpdateEvent
         .getChannelLeft();
 
-    final AudioChannelUnion connectedAudioChan = guildVoiceUpdateEvent
-        .getGuild().getAudioManager().getConnectedChannel();
+    final AudioManager audioManager = guildVoiceUpdateEvent.getGuild()
+        .getAudioManager();
+
+    final AudioChannelUnion connectedAudioChan = audioManager
+        .getConnectedChannel();
 
     if (chanUserLeftFrom == null || connectedAudioChan == null) {
       // Don't care
@@ -59,7 +64,8 @@ public class ChannelUpdateListener implements IEventListener {
     if (isAllBotsInChan) {
       // Clear queue and leave channel if only bots left in the channel
       trackScheduler.destroy();
-      connectedAudioChan.getGuild().getAudioManager().closeAudioConnection();
+      audioManager.closeAudioConnection();
+      audioManager.setSendingHandler(null);
     }
   }
 }

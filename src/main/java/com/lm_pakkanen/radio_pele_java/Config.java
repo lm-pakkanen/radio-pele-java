@@ -1,7 +1,5 @@
 package com.lm_pakkanen.radio_pele_java;
 
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +25,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 @PropertySource("classpath:application.properties")
 public class Config {
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private final Logger LOGGER = LogManager.getLogger();
 
   @Value("${REGEN_COMMANDS}")
   public @NonNull Boolean REGEN_COMMANDS = false;
@@ -52,8 +50,12 @@ public class Config {
    * @return JDA instance.
    */
   @Bean
-  public JDA getJDAInstance(@Autowired List<ICommandListener> commands,
-      @Autowired List<IEventListener> eventListeners) {
+  public JDA getJDAInstance(@Autowired ICommandListener[] commands,
+      @Autowired IEventListener[] eventListeners) throws NullPointerException {
+
+    if (commands == null) {
+      throw new NullPointerException();
+    }
 
     LOGGER.info("Creating JDA instance.");
 
@@ -65,8 +67,14 @@ public class Config {
     builder.setActivity(Activity.playing(BOT_STATUS_MESSAGE));
 
     final JDA jda = builder.build();
-    commands.stream().forEach(jda::addEventListener);
-    eventListeners.stream().forEach(jda::addEventListener);
+
+    for (ICommandListener command : commands) {
+      jda.addEventListener(command);
+    }
+
+    for (IEventListener eventListener : eventListeners) {
+      jda.addEventListener(eventListener);
+    }
 
     LOGGER.info("JDA instance commands built.");
 
@@ -77,7 +85,7 @@ public class Config {
       final CommandBuilder commandBuilder = new CommandBuilder(commands);
       commandBuilder.autoGenerateCommands();
 
-      final List<SlashCommandData> generatedSlashCommands = commandBuilder
+      final SlashCommandData[] generatedSlashCommands = commandBuilder
           .getSlashCommands();
 
       jda.updateCommands().addCommands(generatedSlashCommands).queue();

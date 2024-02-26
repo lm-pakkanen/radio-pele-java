@@ -1,6 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.models;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -16,7 +17,7 @@ import jakarta.annotation.Nonnull;
 
 @Component
 public final class Store {
-  private final @Nonnull List<AudioTrack> playListQueue = new ArrayList<>(15);
+  private final @Nonnull List<AudioTrack> playListQueue = new ArrayList<>(1);
   private final @NonNull BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
 
   /**
@@ -24,8 +25,8 @@ public final class Store {
    * 
    * @param track to add.
    */
-  public void add(@Nullable AudioTrack track) {
-    this.queue.add(track);
+  public boolean add(@Nullable AudioTrack track) {
+    return this.queue.offer(track);
   }
 
   /**
@@ -33,12 +34,12 @@ public final class Store {
    * 
    * @param urls to add.
    */
-  public void addPlaylist(@NonNull List<AudioTrack> audioTracks) {
-    final int playlistSize = Math.min(15, audioTracks.size());
-    final List<AudioTrack> playlistTracks = audioTracks.subList(0,
-        playlistSize);
+  public void addPlaylist(@NonNull AudioTrack[] audioTracks) {
+    final int playlistSize = Math.min(15, audioTracks.length);
+
     this.playListQueue.clear();
-    this.playListQueue.addAll(playlistTracks);
+    this.playListQueue
+        .addAll(Arrays.asList(audioTracks).subList(0, playlistSize));
   }
 
   /**
@@ -82,9 +83,7 @@ public final class Store {
    */
   public void shuffle() {
     final List<AudioTrack> shuffledTracks = new ArrayList<>(this.queue);
-
     Collections.shuffle(shuffledTracks);
-
     this.queue.clear();
     this.queue.addAll(shuffledTracks);
   }
@@ -98,9 +97,7 @@ public final class Store {
     }
 
     final List<AudioTrack> shuffledUrls = new ArrayList<>(this.playListQueue);
-
     Collections.shuffle(shuffledUrls);
-
     this.playListQueue.clear();
     this.playListQueue.addAll(shuffledUrls);
 
