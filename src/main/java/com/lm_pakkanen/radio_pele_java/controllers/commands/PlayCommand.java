@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.lm_pakkanen.radio_pele_java.controllers.MailMan;
 import com.lm_pakkanen.radio_pele_java.controllers.TrackScheduler;
 import com.lm_pakkanen.radio_pele_java.interfaces.ICommandListener;
+import com.lm_pakkanen.radio_pele_java.models.Store;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.InvalidChannelException;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.NotInChannelException;
@@ -16,6 +17,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -26,10 +28,13 @@ import net.dv8tion.jda.api.managers.AudioManager;
 @Component
 public final class PlayCommand extends BaseCommand implements ICommandListener {
 
+  private final @NonNull Store store;
   private final @NonNull TrackScheduler trackScheduler;
 
-  public PlayCommand(@Autowired @NonNull TrackScheduler trackScheduler) {
+  public PlayCommand(@Autowired @NonNull Store store,
+      @Autowired @NonNull TrackScheduler trackScheduler) {
     super();
+    this.store = store;
     this.trackScheduler = trackScheduler;
   }
 
@@ -70,26 +75,41 @@ public final class PlayCommand extends BaseCommand implements ICommandListener {
       final TextChannel textChan = super.getTextChan(event);
 
       final String url = event.getOption("url").getAsString();
+
       final AudioTrack addedTrack = this.trackScheduler.addToQueue(textChan,
           url, true);
 
       final AudioManager audioManager = event.getGuild().getAudioManager();
-      audioManager.setSelfDeafened(true);
+      final boolean isConnected = audioManager.isConnected();
+      final AudioChannel memberAudioChan = tryGetMemberVoiceChan(event);
 
-      if (!audioManager.isConnected()) {
-        tryConnectToVoiceChan(event, audioManager);
+      final AudioChannelUnion managerAudioChan = audioManager
+          .getConnectedChannel();
+
+      long managerAudioChanId = 0L;
+
+      if (managerAudioChan != null) {
+        managerAudioChanId = managerAudioChan.getIdLong();
       }
 
-      event.getGuild().getAudioManager()
-          .setSendingHandler(this.trackScheduler.getRapAudioSendHandler());
+      final long memberAudioChanId = memberAudioChan.getIdLong();
+
+      if (!isConnected || managerAudioChanId != memberAudioChanId) {
+        connectToVoiceChan(memberAudioChan, audioManager);
+      }
+
+      if (audioManager.getSendingHandler() == null) {
+        audioManager
+            .setSendingHandler(this.trackScheduler.getRapAudioSendHandler());
+        audioManager.setSelfDeafened(true);
+      }
 
       if (!this.trackScheduler.isPlaying()) {
         this.trackScheduler.play();
       }
 
       MailMan.replyInteraction(event,
-          new SongAddedEmbed(addedTrack, this.trackScheduler.getStore())
-              .getEmbed());
+          new SongAddedEmbed(addedTrack, this.store).getEmbed());
     } catch (InvalidChannelException | NotInChannelException
         | FailedToLoadSongException exception) {
       MailMan.replyInteraction(event, new ExceptionEmbed(exception).getEmbed());
@@ -97,14 +117,14 @@ public final class PlayCommand extends BaseCommand implements ICommandListener {
   }
 
   /**
-   * Tries to connect to the voice channel.
+   * Tries to get the voice channel of the member who initiated the command.
    * 
-   * @param event        that initiated the command.
-   * @param audioManager instance.
+   * @param event that initiated the command.
    * @throws NotInChannelException
    */
-  private void tryConnectToVoiceChan(SlashCommandInteractionEvent event,
-      AudioManager audioManager) throws NotInChannelException {
+  private @NonNull AudioChannel tryGetMemberVoiceChan(
+      @NonNull SlashCommandInteractionEvent event)
+      throws NotInChannelException {
     final AudioChannelUnion audioChan = event.getMember().getVoiceState()
         .getChannel();
 
@@ -112,6 +132,16 @@ public final class PlayCommand extends BaseCommand implements ICommandListener {
       throw new NotInChannelException();
     }
 
+    return (AudioChannel) audioChan;
+  }
+
+  /**
+   * Connects bot to the voice channel.
+   * 
+   * @param audioManager instance.
+   */
+  private void connectToVoiceChan(@NonNull AudioChannel audioChan,
+      AudioManager audioManager) {
     audioManager.openAudioConnection(audioChan);
   }
 }

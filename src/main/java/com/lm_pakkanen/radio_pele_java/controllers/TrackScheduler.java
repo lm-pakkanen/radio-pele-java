@@ -14,6 +14,7 @@ import com.lm_pakkanen.radio_pele_java.models.message_embeds.QueueEmptyEmbed;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
@@ -21,7 +22,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 @Component
-public final class TrackScheduler {
+public final class TrackScheduler extends AudioEventAdapter {
 
   private static final int FRAME_BUFFER_DURATION_MS = 30_000;
 
@@ -33,23 +34,18 @@ public final class TrackScheduler {
 
   private final @NonNull TrackResolver trackResolver;
   private final @NonNull RapAudioSendHandler rapAudioSendHandler;
-  private final @NonNull RapAudioEventHandler rapAudioEventHandler;
 
   private @Nullable TextChannel lastTextChan;
 
-  public TrackScheduler(@Autowired @NonNull SpotifyController spotifyController)
-      throws NullPointerException {
+  public TrackScheduler(@Autowired @NonNull SpotifyController spotifyController,
+      @Autowired @NonNull Store store) throws NullPointerException {
 
     this.spotifyController = spotifyController;
-    this.store = new Store();
+    this.store = store;
 
     this.audioPlayerManager = new DefaultAudioPlayerManager();
-    this.audioPlayerManager
-        .setFrameBufferDuration(TrackScheduler.FRAME_BUFFER_DURATION_MS);
 
-    AudioSourceManagers.registerRemoteSources(this.audioPlayerManager);
-
-    AudioPlayer audioPlayer = this.audioPlayerManager.createPlayer();
+    final AudioPlayer audioPlayer = this.audioPlayerManager.createPlayer();
 
     if (audioPlayer == null) {
       throw new NullPointerException("AudioPlayer is null");
@@ -60,17 +56,31 @@ public final class TrackScheduler {
     this.trackResolver = new TrackResolver(this.spotifyController,
         this.audioPlayerManager);
 
-    this.rapAudioSendHandler = new RapAudioSendHandler(this);
-    this.rapAudioEventHandler = new RapAudioEventHandler(this);
+    this.rapAudioSendHandler = new RapAudioSendHandler(this.getAudioPlayer());
 
-    this.audioPlayer.addListener(this.rapAudioEventHandler);
+    this.audioPlayerManager
+        .setFrameBufferDuration(TrackScheduler.FRAME_BUFFER_DURATION_MS);
+
+    AudioSourceManagers.registerRemoteSources(this.audioPlayerManager);
+
+    this.audioPlayer.addListener(this);
   }
 
   /**
-   * @return store instance.
+   * @throws NullPointerException
    */
-  public @NonNull Store getStore() {
-    return this.store;
+  @Override
+  public void onTrackEnd(AudioPlayer player, AudioTrack track,
+      AudioTrackEndReason endReason) throws NullPointerException {
+    if (player == null) {
+      throw new NullPointerException("Player is null");
+    }
+
+    if (track == null) {
+      throw new NullPointerException("Track is null");
+    }
+
+    this.onTrackEndHandler(player, track, endReason);
   }
 
   /**

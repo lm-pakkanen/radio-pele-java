@@ -23,10 +23,13 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 @Component
 public final class SkipCommand extends BaseCommand implements ICommandListener {
 
+  private final @NonNull Store store;
   private final @NonNull TrackScheduler trackScheduler;
 
-  public SkipCommand(@Autowired @NonNull TrackScheduler trackScheduler) {
+  public SkipCommand(@Autowired @NonNull Store store,
+      @Autowired @NonNull TrackScheduler trackScheduler) {
     super();
+    this.store = store;
     this.trackScheduler = trackScheduler;
   }
 
@@ -56,8 +59,6 @@ public final class SkipCommand extends BaseCommand implements ICommandListener {
     if (!event.getName().equals(this.getCommandName())) {
       return;
     }
-
-    Store store = this.trackScheduler.getStore();
 
     try {
       if (this.trackScheduler.getAudioPlayer().getPlayingTrack() == null) {

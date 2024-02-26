@@ -11,22 +11,19 @@ import net.dv8tion.jda.api.audio.AudioSendHandler;
 
 public class RapAudioSendHandler implements AudioSendHandler {
 
-  private final @NonNull TrackScheduler trackScheduler;
   private final @NonNull AudioPlayer audioPlayer;
 
   private final @NonNull ByteBuffer audioBuffer;
   private final @NonNull MutableAudioFrame audioFrame;
 
   /**
-   * @param trackScheduler instance.
    * @throws NullPointerException
    */
-  public RapAudioSendHandler(@NonNull TrackScheduler trackScheduler)
+  public RapAudioSendHandler(@NonNull AudioPlayer audioPlayer)
       throws NullPointerException {
-    this.trackScheduler = trackScheduler;
-    this.audioPlayer = this.trackScheduler.getAudioPlayer();
+    this.audioPlayer = audioPlayer;
 
-    ByteBuffer audioBuffer = ByteBuffer.allocate(2048);
+    final ByteBuffer audioBuffer = ByteBuffer.allocate(2048);
 
     if (audioBuffer == null) {
       throw new NullPointerException("AudioBuffer is null");

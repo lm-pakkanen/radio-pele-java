@@ -8,11 +8,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import jakarta.annotation.Nonnull;
 
+@Component
 public final class Store {
   private final @Nonnull List<AudioTrack> playListQueue = new ArrayList<>(15);
   private final @NonNull BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
@@ -22,7 +24,7 @@ public final class Store {
    * 
    * @param track to add.
    */
-  public void add(AudioTrack track) {
+  public void add(@Nullable AudioTrack track) {
     this.queue.add(track);
   }
 
@@ -31,8 +33,8 @@ public final class Store {
    * 
    * @param urls to add.
    */
-  public void addPlaylist(List<AudioTrack> audioTracks) {
-    final int playlistSize = Math.min(50, audioTracks.size());
+  public void addPlaylist(@NonNull List<AudioTrack> audioTracks) {
+    final int playlistSize = Math.min(15, audioTracks.size());
     final List<AudioTrack> playlistTracks = audioTracks.subList(0,
         playlistSize);
     this.playListQueue.clear();
@@ -54,24 +56,6 @@ public final class Store {
    * @return the first track from the queue or null if queue is empty.
    */
   public @Nullable AudioTrack shiftPlaylist() {
-    if (this.playListQueue.isEmpty()) {
-      return null;
-    }
-
-    return this.playListQueue.remove(0);
-  }
-
-  /**
-   * Gets and removes the first track from the playlist queue.
-   * 
-   * @param async whether to wait for the track to be available.
-   * @return the first track from the queue or null if queue is empty.
-   */
-  public @Nullable AudioTrack shiftPlaylist(boolean async) {
-    if (!async) {
-      return this.shiftPlaylist();
-    }
-
     if (this.playListQueue.isEmpty()) {
       return null;
     }
