@@ -53,8 +53,19 @@ public final class TrackResolver {
     final TrackResolver.RapAudioLoadResultHandler resultHandler = new RapAudioLoadResultHandler(
         asPlaylist);
 
+    int count = 0;
+
     for (final String finalUrl : finalUrls) {
+      if (finalUrl == null) {
+        break;
+      }
+
+      count++;
       audioPlayerManager.loadItemSync(finalUrl, resultHandler);
+    }
+
+    if (count == 0) {
+      throw new FailedToLoadSongException("Not found.");
     }
 
     final String failureMessage = resultHandler.getFailureMessage();;
@@ -64,10 +75,6 @@ public final class TrackResolver {
     }
 
     final AudioTrack[] resolvedTracks = resultHandler.getResolvedTracks();
-
-    if (resolvedTracks.length == 0) {
-      throw new FailedToLoadSongException("Not found.");
-    }
 
     return resolvedTracks;
   }

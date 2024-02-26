@@ -180,9 +180,11 @@ public final class TrackScheduler extends AudioEventAdapter {
     } else {
       for (AudioTrack audioTrack : audioTracks) {
         final boolean addResult = this.store.add(audioTrack);
+
         if (addResult == false) {
+          throw new FailedToLoadSongException("Not found.");
         }
-        throw new FailedToLoadSongException("Not found.");
+
       }
     }
 

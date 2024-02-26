@@ -123,6 +123,10 @@ public final class SpotifyController {
     for (int i = 0; i < resolvedSimplifiedTracks.length; i++) {
       final TrackSimplified resolvedTrack = resolvedSimplifiedTracks[i];
 
+      if (resolvedTrack == null) {
+        break;
+      }
+
       final ArtistSimplified[] resolvedTrackArtists = resolvedTrack
           .getArtists();
 
@@ -147,10 +151,6 @@ public final class SpotifyController {
 
       qualifiedTrackNames[i] = qualifiedTrackName;
 
-    }
-
-    if (qualifiedTrackNames.length == 0) {
-      throw new FailedToLoadSongException("Not found.");
     }
 
     return qualifiedTrackNames;
