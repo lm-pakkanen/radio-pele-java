@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -40,4 +41,7 @@ public class TrackInfoTest {
       long durationMs, @NonNull String expectedDurationString) {
     return new AbstractMap.SimpleEntry<>(durationMs, expectedDurationString);
   }
+
+  @Configuration
+  public static class Config {}
 }

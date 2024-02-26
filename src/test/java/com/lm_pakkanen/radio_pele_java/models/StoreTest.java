@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Configuration;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
@@ -117,4 +118,7 @@ public class StoreTest {
     this.store.clearPlaylist();
     assertEquals(0, this.store.getPlaylistQueueSize());
   }
+
+  @Configuration
+  public static class Config {}
 }
