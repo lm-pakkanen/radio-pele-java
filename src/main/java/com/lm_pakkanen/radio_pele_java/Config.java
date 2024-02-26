@@ -2,6 +2,8 @@ package com.lm_pakkanen.radio_pele_java;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +26,8 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 @ComponentScan("com.lm_pakkanen.radio_pele_java.controllers")
 @PropertySource("classpath:application.properties")
 public class Config {
+
+  private static final Logger LOGGER = LogManager.getLogger();
 
   @Value("${REGEN_COMMANDS}")
   public @NonNull Boolean REGEN_COMMANDS = false;
@@ -51,7 +55,12 @@ public class Config {
   public JDA getJDAInstance(@Autowired List<ICommandListener> commands,
       @Autowired List<IEventListener> eventListeners) {
 
+    LOGGER.info("Creating JDA instance.");
+
     final JDABuilder builder = JDABuilder.createDefault(BOT_TOKEN);
+
+    LOGGER.info("Logged in to the JDA instance.");
+
     builder.setStatus(OnlineStatus.ONLINE);
     builder.setActivity(Activity.playing(BOT_STATUS_MESSAGE));
 
@@ -59,7 +68,11 @@ public class Config {
     commands.stream().forEach(jda::addEventListener);
     eventListeners.stream().forEach(jda::addEventListener);
 
+    LOGGER.info("JDA instance commands built.");
+
     if (this.REGEN_COMMANDS) {
+      LOGGER.info("Regenerating JDA commands.");
+
       // Regenerate commands if env variable is set to true.
       final CommandBuilder commandBuilder = new CommandBuilder(commands);
       commandBuilder.autoGenerateCommands();
@@ -68,7 +81,11 @@ public class Config {
           .getSlashCommands();
 
       jda.updateCommands().addCommands(generatedSlashCommands).queue();
+
+      LOGGER.info("JDA commands regenerated.");
     }
+
+    LOGGER.info("JDA instance created.");
 
     return jda;
   }

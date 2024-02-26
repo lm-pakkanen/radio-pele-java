@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Configuration>
+<Configuration>
+  <Appenders>
+    <Console name="CONSOLE" target="SYSTEM_OUT">
+      <PatternLayout
+        pattern="%d{ISO8601} %-5level[%t] %C: %msg%n%throwable" />
+    </Console>
+
+    <File name="STARTUP_FILE" fileName="./logs/startup.log">
+      <PatternLayout
+        pattern="%d{ISO8601} %-5level[%t] %C: %msg%n%throwable" />
+    </File>
+  </Appenders>
+
+  <Loggers>
+    <Root level="info">
+      <AppenderRef ref="CONSOLE" />
+
+    </Root>
+
+    <Logger name="com.lm_pakkanen.radio_pele_java.Config" level="info" additivity="false">
+      <AppenderRef ref="STARTUP_FILE" />
+    </Logger>
+  </Loggers>
+
+</Configuration>

@@ -14,3 +14,5 @@ target/
 .sts4-cache
 
 **/resources/application-prod.yml
+logs
+**/*.log
