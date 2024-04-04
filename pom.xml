@@ -87,15 +87,6 @@
       <artifactId>jackson-jr-objects</artifactId>
       <version>2.13.0</version>
     </dependency>
-
-    <dependency>
-      <groupId>io.github.lm-pakkanen</groupId>
-      <artifactId>io.github.lm-pakkanen.tidal_api</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-      <scope>system</scope>
-      <systemPath>C:\Users\Zecuel\.m2\repository\io\github\lm-pakkanen\tidal_api\0.0.1-SNAPSHOT\tidal_api-0.0.1-SNAPSHOT.jar</systemPath>
-    </dependency>
-
   </dependencies>
 
   <build>
