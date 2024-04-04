@@ -109,7 +109,8 @@ public final class TrackScheduler extends AudioEventAdapter {
    */
   public void onTrackEndHandler(@NonNull AudioPlayer player,
       @NonNull AudioTrack track, AudioTrackEndReason endReason) {
-    if (!endReason.mayStartNext) {
+    if (!endReason.mayStartNext
+        || endReason.equals(AudioTrackEndReason.LOAD_FAILED)) {
       return;
     }
 
