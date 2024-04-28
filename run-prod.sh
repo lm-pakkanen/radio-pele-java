@@ -1,1 +1,1 @@
-mvn clean package && java -jar -noverify target/radio_pele_java-0.0.1-SNAPSHOT.jar &
+killall -9 java || true && mvn clean package && java -jar -noverify target/radio_pele_java-0.0.1-SNAPSHOT.jar &
