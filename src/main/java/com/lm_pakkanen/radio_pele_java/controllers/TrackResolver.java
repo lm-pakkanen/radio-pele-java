@@ -1,6 +1,8 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -35,48 +37,117 @@ public final class TrackResolver {
   public @NonNull AudioTrack[] resolve(@NonNull String url, boolean asPlaylist)
       throws FailedToLoadSongException {
     final int capacity = asPlaylist ? 15 : 1;
-    final String[] finalUrls = new String[capacity];
+    final List<String> finalUrls = new ArrayList<String>(capacity);
 
     if (url.contains("spotify")) {
       final String[] qualifiedTrackNames = this.spotifyController
           .resolveQualifiedTrackNames(url);
 
       for (int i = 0; i < qualifiedTrackNames.length; i++) {
-        finalUrls[i] = "ytsearch:" + qualifiedTrackNames[i];
+        finalUrls.add("ytsearch:" + qualifiedTrackNames[i]);
       }
 
       asPlaylist = false;
     } else {
-      finalUrls[0] = url;
+      finalUrls.add(url);
     }
 
-    final TrackResolver.RapAudioLoadResultHandler resultHandler = new RapAudioLoadResultHandler(
-        asPlaylist);
-
-    int count = 0;
-
-    for (final String finalUrl : finalUrls) {
-      if (finalUrl == null) {
-        break;
-      }
-
-      count++;
-      audioPlayerManager.loadItemSync(finalUrl, resultHandler);
-    }
-
-    if (count == 0) {
+    if (finalUrls.size() == 0) {
       throw new FailedToLoadSongException("Not found.");
     }
 
-    final String failureMessage = resultHandler.getFailureMessage();;
+    final List<TrackResolver.RapAudioLoadResultHandler> resultHandlers = new ArrayList<>();
 
-    if (failureMessage != null) {
-      throw new FailedToLoadSongException(failureMessage);
+    for (final String finalUrl : finalUrls) {
+      final TrackResolver.RapAudioLoadResultHandler resultHandler = new RapAudioLoadResultHandler(
+          asPlaylist);
+      resultHandlers.add(resultHandler);
+      audioPlayerManager.loadItem(finalUrl, resultHandler);
+      awaitResult(resultHandler);
     }
 
-    final AudioTrack[] resolvedTracks = resultHandler.getResolvedTracks();
+    final AggregatedResult aggregatedResult = getAggregatedResult(
+        resultHandlers);
 
+    if (aggregatedResult.failureMessage != null) {
+      throw new FailedToLoadSongException(aggregatedResult.failureMessage);
+    }
+
+    final AudioTrack[] resolvedTracks = aggregatedResult.audioTracks;
     return resolvedTracks;
+  }
+
+  /**
+   * Waits for the result to be ready.
+   * 
+   * @param resultHandler to wait for.
+   * @throws FailedToLoadSongException
+   */
+  private static void awaitResult(
+      TrackResolver.RapAudioLoadResultHandler resultHandler)
+      throws FailedToLoadSongException {
+    final int MAX_LOOP_COUNT = 50;
+
+    try {
+      for (int i = 0; i < MAX_LOOP_COUNT; i++) {
+        if (resultHandler.isReady) {
+          break;
+        }
+        TimeUnit.MILLISECONDS.sleep(100);
+      }
+    } catch (InterruptedException exception) {
+      throw new FailedToLoadSongException("Interrupted (internal).");
+    }
+
+    if (!resultHandler.isReady) {
+      throw new FailedToLoadSongException("Timed out.");
+    }
+  }
+
+  /**
+   * Aggregates the results of multiple result handlers.
+   * 
+   * @param resultHandlers to aggregate.
+   * @return aggregated result.
+   */
+  private static AggregatedResult getAggregatedResult(
+      @NonNull List<TrackResolver.RapAudioLoadResultHandler> resultHandlers) {
+    String failureMessage = null;
+    final List<AudioTrack> resolvedTracks = new ArrayList<>();
+
+    for (final TrackResolver.RapAudioLoadResultHandler resultHandler : resultHandlers) {
+      final String resultHandlerFailureMessage = resultHandler
+          .getFailureMessage();
+
+      if (resultHandlerFailureMessage != null) {
+        failureMessage = resultHandlerFailureMessage;
+        break;
+      }
+
+      final AudioTrack[] resultHandlerResolvedTracks = resultHandler
+          .getResolvedTracks();
+
+      for (final AudioTrack resolvedTrack : resultHandlerResolvedTracks) {
+        resolvedTracks.add(resolvedTrack);
+      }
+    }
+
+    return new AggregatedResult(failureMessage,
+        resolvedTracks.toArray(new AudioTrack[0]));
+  }
+
+  /**
+   * Data class for the aggregated result of multiple result handlers.
+   */
+  public static class AggregatedResult {
+    public final @Nullable String failureMessage;
+    public final @NonNull AudioTrack[] audioTracks;
+
+    public AggregatedResult(@Nullable String failureMessage,
+        @NonNull AudioTrack[] audioTracks) {
+      this.failureMessage = failureMessage;
+      this.audioTracks = audioTracks;
+    }
   }
 
   /**
