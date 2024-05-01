@@ -26,6 +26,7 @@ public final class TrackScheduler extends AudioEventAdapter {
 
   private static final int FRAME_BUFFER_DURATION_MS = 30_000;
 
+  private final @NonNull TidalController tidalController;
   private final @NonNull SpotifyController spotifyController;
   private final @NonNull Store store;
 
@@ -37,9 +38,11 @@ public final class TrackScheduler extends AudioEventAdapter {
 
   private @Nullable TextChannel lastTextChan;
 
-  public TrackScheduler(@Autowired @NonNull SpotifyController spotifyController,
+  public TrackScheduler(@Autowired @NonNull TidalController tidalController,
+      @Autowired @NonNull SpotifyController spotifyController,
       @Autowired @NonNull Store store) throws NullPointerException {
 
+    this.tidalController = tidalController;
     this.spotifyController = spotifyController;
     this.store = store;
 
@@ -53,8 +56,8 @@ public final class TrackScheduler extends AudioEventAdapter {
 
     this.audioPlayer = audioPlayer;
 
-    this.trackResolver = new TrackResolver(this.spotifyController,
-        this.audioPlayerManager);
+    this.trackResolver = new TrackResolver(this.tidalController,
+        this.spotifyController, this.audioPlayerManager);
 
     this.rapAudioSendHandler = new RapAudioSendHandler(this.getAudioPlayer());
 

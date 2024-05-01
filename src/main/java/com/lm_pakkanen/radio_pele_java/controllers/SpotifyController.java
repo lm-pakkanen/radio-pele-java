@@ -32,7 +32,9 @@ public final class SpotifyController {
   private final @NonNull Config config;
   private final @NonNull SpotifyApi spotifyApi;
 
-  // Whether the Spotify API is usable or not.
+  /**
+   * Whether the Spotify API is authorised or not.
+   */
   private boolean isUsable = true;
 
   /**

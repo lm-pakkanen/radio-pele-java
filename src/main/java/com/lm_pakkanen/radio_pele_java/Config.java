@@ -45,6 +45,12 @@ public class Config {
   @Value("${SPOTIFY_CLIENT_SECRET}")
   public @NonNull String SPOTIFY_CLIENT_SECRET = "";
 
+  @Value("${TIDAL_CLIENT_ID}")
+  public @NonNull String TIDAL_CLIENT_ID = "";
+
+  @Value("${TIDAL_CLIENT_SECRET}")
+  public @NonNull String TIDAL_CLIENT_SECRET = "";
+
   /**
    * Generates JDA client instance.
    * 

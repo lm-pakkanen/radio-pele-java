@@ -1,5 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -16,11 +18,14 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 public final class TrackResolver {
+  private final @NonNull TidalController tidalController;
   private final @NonNull SpotifyController spotifyController;
   private final @NonNull AudioPlayerManager audioPlayerManager;
 
-  public TrackResolver(@Autowired @NonNull SpotifyController spotifyController,
+  public TrackResolver(@Autowired @NonNull TidalController tidalController,
+      @Autowired @NonNull SpotifyController spotifyController,
       @NonNull AudioPlayerManager audioPlayerManager) {
+    this.tidalController = tidalController;
     this.spotifyController = spotifyController;
     this.audioPlayerManager = audioPlayerManager;
   }
@@ -39,8 +44,27 @@ public final class TrackResolver {
     final int capacity = asPlaylist ? 15 : 1;
     final List<String> finalUrls = new ArrayList<String>(capacity);
 
-    if (url.contains("spotify")) {
+    URI uri = null;
+
+    try {
+      uri = new URI(url);
+    } catch (URISyntaxException exception) {
+      throw new FailedToLoadSongException("Invalid URL.");
+    }
+
+    final String uriDomain = uri.getHost();
+
+    if (uriDomain.contains("spotify")) {
       final String[] qualifiedTrackNames = this.spotifyController
+          .resolveQualifiedTrackNames(url);
+
+      for (int i = 0; i < qualifiedTrackNames.length; i++) {
+        finalUrls.add("ytsearch:" + qualifiedTrackNames[i]);
+      }
+
+      asPlaylist = false;
+    } else if (uriDomain.contains("tidal")) {
+      final String[] qualifiedTrackNames = this.tidalController
           .resolveQualifiedTrackNames(url);
 
       for (int i = 0; i < qualifiedTrackNames.length; i++) {
