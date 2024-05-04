@@ -119,8 +119,8 @@ public final class TrackScheduler extends AudioEventAdapter {
 
     final AudioTrack nextTrack = this.playNextTrack();
 
-    if (nextTrack == null && lastTextChan != null) {
-      MailMan.send(lastTextChan, new QueueEmptyEmbed().getEmbed());
+    if (nextTrack == null && this.lastTextChan != null) {
+      MailMan.send(this.lastTextChan, new QueueEmptyEmbed().getEmbed());
       return;
     } else if (nextTrack == null) {
       return;
@@ -128,8 +128,8 @@ public final class TrackScheduler extends AudioEventAdapter {
 
     this.audioPlayer.playTrack(nextTrack);
 
-    if (lastTextChan != null) {
-      MailMan.send(lastTextChan,
+    if (this.lastTextChan != null) {
+      MailMan.send(this.lastTextChan,
           new CurrentSongEmbed(nextTrack, this.store).getEmbed());
     }
   }
@@ -162,7 +162,10 @@ public final class TrackScheduler extends AudioEventAdapter {
   public @NonNull AudioTrack addToQueue(@NonNull TextChannel textChan,
       @Nullable String url, boolean blockPlaylists)
       throws FailedToLoadSongException {
-    this.setLastTextChannel(textChan);
+
+    if (textChan != null) {
+      this.setLastTextChannel(textChan);
+    }
 
     if (url == null || url.isEmpty()) {
       throw new FailedToLoadSongException("Invalid url.");
