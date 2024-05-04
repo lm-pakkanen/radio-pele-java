@@ -23,6 +23,17 @@
 
   <repositories>
     <repository>
+      <id>central</id>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <url>http://repo1.maven.org</url>
+    </repository>
+
+    <repository>
       <id>jitpack</id>
       <url>https://jitpack.io</url>
     </repository>
