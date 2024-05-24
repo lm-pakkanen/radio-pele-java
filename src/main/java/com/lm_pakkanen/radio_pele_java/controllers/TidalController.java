@@ -62,7 +62,7 @@ public class TidalController {
 
     final boolean resolveAsPlaylist = isArtist || isAlbum || isPlaylist;
 
-    final int capacity = resolveAsPlaylist ? 15 : 1;
+    final int capacity = resolveAsPlaylist ? Config.PLAYLIST_MAX_SIZE : 1;
 
     final String entityId = getEntityIdFromUrl(url);
 
@@ -129,7 +129,8 @@ public class TidalController {
     try {
 
       if (isArtist) {
-        return this.tidalApi.tracks.listByArtist(entityId, "FI", 15);
+        return this.tidalApi.tracks.listByArtist(entityId, "FI",
+            Config.PLAYLIST_MAX_SIZE);
       }
 
       final TidalTrack[] tracks = new TidalTrack[] {

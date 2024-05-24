@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
+import com.lm_pakkanen.radio_pele_java.Config;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -41,7 +42,7 @@ public final class TrackResolver {
    */
   public @NonNull AudioTrack[] resolve(@NonNull String url, boolean asPlaylist)
       throws FailedToLoadSongException {
-    final int capacity = asPlaylist ? 15 : 1;
+    final int capacity = asPlaylist ? Config.PLAYLIST_MAX_SIZE : 1;
     final List<String> finalUrls = new ArrayList<String>(capacity);
 
     URI uri = null;
@@ -55,12 +56,11 @@ public final class TrackResolver {
     final String uriDomain = uri.getHost();
 
     if (uriDomain.contains("spotify")) {
-      final String[] qualifiedTrackNames = this.spotifyController
+      final List<String> qualifiedTrackNames = this.spotifyController
           .resolveQualifiedTrackNames(url);
 
-      for (int i = 0; i < qualifiedTrackNames.length; i++) {
-        finalUrls.add("ytsearch:" + qualifiedTrackNames[i]);
-      }
+      qualifiedTrackNames.stream().map(n -> "ytsearch:" + n)
+          .forEach(finalUrls::add);
 
       asPlaylist = false;
     } else if (uriDomain.contains("tidal")) {
@@ -187,7 +187,7 @@ public final class TrackResolver {
 
     public RapAudioLoadResultHandler(boolean asPlaylist) {
       this.asPlaylist = asPlaylist;
-      int initialCap = this.asPlaylist ? 15 : 1;
+      int initialCap = this.asPlaylist ? Config.PLAYLIST_MAX_SIZE : 1;
       this.resolvedTracks = new AudioTrack[initialCap];
     }
 

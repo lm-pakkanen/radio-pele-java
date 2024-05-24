@@ -1,6 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -68,7 +69,7 @@ public final class SpotifyController {
    * @throws NullPointerException
    * @throws FailedToLoadSongException
    */
-  public @NonNull String[] resolveQualifiedTrackNames(@Nullable String url)
+  public @NonNull List<String> resolveQualifiedTrackNames(@Nullable String url)
       throws FailedToLoadSongException {
 
     if (url == null || url.isEmpty()) {
@@ -78,29 +79,31 @@ public final class SpotifyController {
     final boolean isAlbum = url.contains("/album/");
     final boolean isPlaylist = url.contains("/playlist/");
 
-    final int capacity = isAlbum || isPlaylist ? 15 : 1;
-
-    TrackSimplified[] resolvedSimplifiedTracks = new TrackSimplified[capacity];
+    final List<TrackSimplified> resolvedSimplifiedTracks = new ArrayList<>();
 
     try {
       final String entityId = getEntityIdFromUrl(url);
 
       if (isAlbum) {
         final Paging<TrackSimplified> albumSimplifiedTracks = this.spotifyApi
-            .getAlbumsTracks(entityId).limit(15).build().execute();
+            .getAlbumsTracks(entityId).limit(Config.PLAYLIST_MAX_SIZE).build()
+            .execute();
 
-        resolvedSimplifiedTracks = albumSimplifiedTracks.getItems();
+        resolvedSimplifiedTracks
+            .addAll(List.of(albumSimplifiedTracks.getItems()));
 
       } else if (isPlaylist) {
         final PlaylistTrack[] playlistTrackItems = this.spotifyApi
-            .getPlaylistsItems(entityId).limit(15).build().execute().getItems();
+            .getPlaylistsItems(entityId).limit(Config.PLAYLIST_MAX_SIZE).build()
+            .execute().getItems();
 
         for (int i = 0; i < playlistTrackItems.length; i++) {
           final String playlistTrackItemString = JSON.std
               .asString(playlistTrackItems[i].getTrack());
 
-          resolvedSimplifiedTracks[i] = new TrackSimplified.JsonUtil()
-              .createModelObject(playlistTrackItemString);
+          resolvedSimplifiedTracks.add(new TrackSimplified.JsonUtil()
+              .createModelObject(playlistTrackItemString));
+
         }
 
       } else {
@@ -109,8 +112,8 @@ public final class SpotifyController {
 
         final String trackAsString = JSON.std.asString(track);
 
-        resolvedSimplifiedTracks[0] = new TrackSimplified.JsonUtil()
-            .createModelObject(trackAsString);
+        resolvedSimplifiedTracks.add(
+            new TrackSimplified.JsonUtil().createModelObject(trackAsString));
       }
     } catch (IOException | SpotifyWebApiException | ParseException exception) {
       String exceptionMessage = exception.getMessage();
@@ -122,21 +125,20 @@ public final class SpotifyController {
       throw new FailedToLoadSongException(exceptionMessage);
     }
 
-    final String[] qualifiedTrackNames = new String[capacity];
+    final List<String> qualifiedTrackNames = new ArrayList<>();
 
-    for (int i = 0; i < resolvedSimplifiedTracks.length; i++) {
-      final TrackSimplified resolvedTrack = resolvedSimplifiedTracks[i];
+    for (TrackSimplified resolvedTrack : resolvedSimplifiedTracks) {
 
       if (resolvedTrack == null) {
         break;
       }
 
-      final ArtistSimplified[] resolvedTrackArtists = resolvedTrack
-          .getArtists();
+      final List<ArtistSimplified> resolvedTrackArtists = List
+          .of(resolvedTrack.getArtists());
 
-      final ArtistSimplified artist = List.of(resolvedTrackArtists).stream()
+      final ArtistSimplified artist = resolvedTrackArtists.stream()
           .filter(n -> n.getType().equals(ModelObjectType.ARTIST)).findFirst()
-          .orElse(resolvedTrackArtists[0]);
+          .orElse(resolvedTrackArtists.getFirst());
 
       final StringBuilder qualifiedTrackNameBuilder = new StringBuilder();
 
@@ -153,7 +155,7 @@ public final class SpotifyController {
         continue;
       }
 
-      qualifiedTrackNames[i] = qualifiedTrackName;
+      qualifiedTrackNames.add(qualifiedTrackName);
 
     }
 

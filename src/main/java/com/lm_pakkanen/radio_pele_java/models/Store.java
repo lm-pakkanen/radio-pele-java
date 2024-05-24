@@ -12,6 +12,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+import com.lm_pakkanen.radio_pele_java.Config;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import jakarta.annotation.Nonnull;
@@ -37,7 +38,8 @@ public final class Store {
    * @param urls to add.
    */
   public void addPlaylist(@NonNull AudioTrack[] audioTracks) {
-    final int playlistSize = Math.min(15, audioTracks.length);
+    final int playlistSize = Math.min(Config.PLAYLIST_MAX_SIZE,
+        audioTracks.length);
 
     this.playListQueue.clear();
     this.playListQueue

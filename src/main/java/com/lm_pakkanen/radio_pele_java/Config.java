@@ -30,6 +30,8 @@ public class Config {
 
   private final Logger LOGGER = LogManager.getLogger();
 
+  public final static int PLAYLIST_MAX_SIZE = 500;
+
   @Value("${REGEN_COMMANDS}")
   public @NonNull Boolean REGEN_COMMANDS = false;
 
