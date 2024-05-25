@@ -20,13 +20,10 @@
   </Appenders>
 
   <Loggers>
-    <Root level="info">
+    <Root>
       <AppenderRef ref="CONSOLE" />
       <AppenderRef ref="INFO" />
-    </Root>
-
-    <Root level="error">
-      <AppenderRef ref="ERROR" />
+      <!-- <AppenderRef ref="ERROR" /> -->
     </Root>
 
     <Logger name="com.lm_pakkanen.radio_pele_java.Config" level="info" additivity="false">
