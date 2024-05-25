@@ -28,7 +28,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 @PropertySource("classpath:application.properties")
 public class Config {
 
-  private final Logger LOGGER = LogManager.getLogger();
+  private final Logger logger = LogManager.getLogger(Config.class);
 
   public final static int PLAYLIST_MAX_SIZE = 500;
 
@@ -68,11 +68,11 @@ public class Config {
       throw new NullPointerException();
     }
 
-    LOGGER.info("Creating JDA instance.");
+    logger.info("Creating JDA instance.");
 
     final JDABuilder builder = JDABuilder.createDefault(BOT_TOKEN);
 
-    LOGGER.info("Logged in to the JDA instance.");
+    logger.info("Logged in to the JDA instance.");
 
     builder.setStatus(OnlineStatus.ONLINE);
     builder.setActivity(Activity.playing(BOT_STATUS_MESSAGE));
@@ -87,10 +87,10 @@ public class Config {
       jda.addEventListener(eventListener);
     }
 
-    LOGGER.info("JDA instance commands built.");
+    logger.info("JDA instance commands built.");
 
     if (this.REGEN_COMMANDS) {
-      LOGGER.info("Regenerating JDA commands.");
+      logger.info("Regenerating JDA commands.");
 
       // Regenerate commands if env variable is set to true.
       final CommandBuilder commandBuilder = new CommandBuilder(commands);
@@ -101,10 +101,10 @@ public class Config {
 
       jda.updateCommands().addCommands(generatedSlashCommands).queue();
 
-      LOGGER.info("JDA commands regenerated.");
+      logger.info("JDA commands regenerated.");
     }
 
-    LOGGER.info("JDA instance created.");
+    logger.info("JDA instance created.");
 
     return jda;
   }

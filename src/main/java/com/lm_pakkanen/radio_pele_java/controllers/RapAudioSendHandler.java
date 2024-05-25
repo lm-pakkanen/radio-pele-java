@@ -2,6 +2,8 @@ package com.lm_pakkanen.radio_pele_java.controllers;
 
 import java.nio.ByteBuffer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
@@ -10,6 +12,9 @@ import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 
 public class RapAudioSendHandler implements AudioSendHandler {
+
+  private final static Logger logger = LoggerFactory
+      .getLogger(RapAudioSendHandler.class);
 
   private final @NonNull AudioPlayer audioPlayer;
 
@@ -26,6 +31,7 @@ public class RapAudioSendHandler implements AudioSendHandler {
     final ByteBuffer audioBuffer = ByteBuffer.allocate(2048);
 
     if (audioBuffer == null) {
+      logger.error("AudioBuffer is null");
       throw new NullPointerException("AudioBuffer is null");
     }
 

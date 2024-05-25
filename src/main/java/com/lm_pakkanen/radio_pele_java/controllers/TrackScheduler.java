@@ -46,31 +46,36 @@ public final class TrackScheduler extends AudioEventAdapter {
       @Autowired @NonNull SpotifyController spotifyController,
       @Autowired @NonNull Store store) throws NullPointerException {
 
-    this.tidalController = tidalController;
-    this.spotifyController = spotifyController;
-    this.store = store;
+    try {
+      this.tidalController = tidalController;
+      this.spotifyController = spotifyController;
+      this.store = store;
 
-    this.audioPlayerManager = new DefaultAudioPlayerManager();
+      this.audioPlayerManager = new DefaultAudioPlayerManager();
 
-    final AudioPlayer audioPlayer = this.audioPlayerManager.createPlayer();
+      final AudioPlayer audioPlayer = this.audioPlayerManager.createPlayer();
 
-    if (audioPlayer == null) {
-      throw new NullPointerException("AudioPlayer is null");
+      if (audioPlayer == null) {
+        throw new NullPointerException("AudioPlayer is null");
+      }
+
+      this.audioPlayer = audioPlayer;
+
+      this.trackResolver = new TrackResolver(this.tidalController,
+          this.spotifyController, this.audioPlayerManager);
+
+      this.rapAudioSendHandler = new RapAudioSendHandler(this.getAudioPlayer());
+
+      this.audioPlayerManager
+          .setFrameBufferDuration(TrackScheduler.FRAME_BUFFER_DURATION_MS);
+
+      AudioSourceManagers.registerRemoteSources(this.audioPlayerManager);
+
+      this.audioPlayer.addListener(this);
+    } catch (NullPointerException e) {
+      logger.error("AudioPlayer is null.");
+      throw e;
     }
-
-    this.audioPlayer = audioPlayer;
-
-    this.trackResolver = new TrackResolver(this.tidalController,
-        this.spotifyController, this.audioPlayerManager);
-
-    this.rapAudioSendHandler = new RapAudioSendHandler(this.getAudioPlayer());
-
-    this.audioPlayerManager
-        .setFrameBufferDuration(TrackScheduler.FRAME_BUFFER_DURATION_MS);
-
-    AudioSourceManagers.registerRemoteSources(this.audioPlayerManager);
-
-    this.audioPlayer.addListener(this);
   }
 
   /**
