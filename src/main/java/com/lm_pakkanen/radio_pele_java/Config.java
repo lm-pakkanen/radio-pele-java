@@ -1,7 +1,5 @@
 package com.lm_pakkanen.radio_pele_java;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,12 +12,14 @@ import com.lm_pakkanen.radio_pele_java.controllers.commands.CommandBuilder;
 import com.lm_pakkanen.radio_pele_java.interfaces.ICommandListener;
 import com.lm_pakkanen.radio_pele_java.interfaces.IEventListener;
 
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
+@Slf4j
 @Configuration
 @ComponentScan(basePackages = {
     "com.lm_pakkanen.radio_pele_java.controllers",
@@ -27,8 +27,6 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 })
 @PropertySource("classpath:application.properties")
 public class Config {
-
-  private final Logger logger = LogManager.getLogger(Config.class);
 
   public final static int PLAYLIST_MAX_SIZE = 500;
 
@@ -68,11 +66,11 @@ public class Config {
       throw new NullPointerException();
     }
 
-    logger.info("Creating JDA instance.");
+    log.info("Creating JDA instance.");
 
     final JDABuilder builder = JDABuilder.createDefault(BOT_TOKEN);
 
-    logger.info("Logged in to the JDA instance.");
+    log.info("Logged in to the JDA instance.");
 
     builder.setStatus(OnlineStatus.ONLINE);
     builder.setActivity(Activity.playing(BOT_STATUS_MESSAGE));
@@ -87,10 +85,10 @@ public class Config {
       jda.addEventListener(eventListener);
     }
 
-    logger.info("JDA instance commands built.");
+    log.info("JDA instance commands built.");
 
     if (this.REGEN_COMMANDS) {
-      logger.info("Regenerating JDA commands.");
+      log.info("Regenerating JDA commands.");
 
       // Regenerate commands if env variable is set to true.
       final CommandBuilder commandBuilder = new CommandBuilder(commands);
@@ -101,10 +99,10 @@ public class Config {
 
       jda.updateCommands().addCommands(generatedSlashCommands).queue();
 
-      logger.info("JDA commands regenerated.");
+      log.info("JDA commands regenerated.");
     }
 
-    logger.info("JDA instance created.");
+    log.info("JDA instance created.");
 
     return jda;
   }

@@ -1,7 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
@@ -20,16 +20,18 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
 import dev.lavalink.youtube.YoutubeAudioSourceManager;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
+@Slf4j
 @Component
 @Lazy
 public final class TrackScheduler extends AudioEventAdapter {
 
-  private final static Logger logger = LoggerFactory
-      .getLogger(TrackScheduler.class);
-
   private static final int FRAME_BUFFER_DURATION_MS = 30_000;
+
+  private static final List<String> PLAYLIST_URI_MATCHERS = List
+      .of("/playlist/", "/album/", "?list=", "&list=");
 
   private final @NonNull TidalController tidalController;
   private final @NonNull SpotifyController spotifyController;
@@ -45,41 +47,37 @@ public final class TrackScheduler extends AudioEventAdapter {
 
   public TrackScheduler(@Autowired @NonNull TidalController tidalController,
       @Autowired @NonNull SpotifyController spotifyController,
-      @Autowired @NonNull Store store) throws NullPointerException {
+      @Autowired @NonNull Store store) {
 
-    try {
-      this.tidalController = tidalController;
-      this.spotifyController = spotifyController;
-      this.store = store;
+    this.tidalController = tidalController;
+    this.spotifyController = spotifyController;
+    this.store = store;
 
-      this.audioPlayerManager = new DefaultAudioPlayerManager();
+    this.audioPlayerManager = new DefaultAudioPlayerManager();
 
-      final AudioPlayer audioPlayer = this.audioPlayerManager.createPlayer();
+    final AudioPlayer audioPlayer = this.audioPlayerManager.createPlayer();
 
-      if (audioPlayer == null) {
-        throw new NullPointerException("AudioPlayer is null");
-      }
-
-      this.audioPlayer = audioPlayer;
-
-      this.trackResolver = new TrackResolver(this.tidalController,
-          this.spotifyController, this.audioPlayerManager);
-
-      this.rapAudioSendHandler = new RapAudioSendHandler(this.getAudioPlayer());
-
-      this.audioPlayerManager
-          .setFrameBufferDuration(TrackScheduler.FRAME_BUFFER_DURATION_MS);
-      this.audioPlayerManager
-          .registerSourceManager(new YoutubeAudioSourceManager());
-
-      AudioSourceManagers.registerRemoteSources(this.audioPlayerManager,
-          com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager.class);
-
-      this.audioPlayer.addListener(this);
-    } catch (NullPointerException e) {
-      logger.error("AudioPlayer is null.");
-      throw e;
+    if (audioPlayer == null) {
+      log.error("AudioPlayer is null.");
+      throw new IllegalStateException("AudioPlayer is null");
     }
+
+    this.audioPlayer = audioPlayer;
+
+    this.trackResolver = new TrackResolver(this.tidalController,
+        this.spotifyController, this.audioPlayerManager);
+
+    this.rapAudioSendHandler = new RapAudioSendHandler(this.getAudioPlayer());
+
+    this.audioPlayerManager
+        .setFrameBufferDuration(TrackScheduler.FRAME_BUFFER_DURATION_MS);
+    this.audioPlayerManager
+        .registerSourceManager(new YoutubeAudioSourceManager());
+
+    AudioSourceManagers.registerRemoteSources(this.audioPlayerManager,
+        com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager.class);
+
+    this.audioPlayer.addListener(this);
   }
 
   /**
@@ -88,6 +86,8 @@ public final class TrackScheduler extends AudioEventAdapter {
   @Override
   public void onTrackEnd(AudioPlayer player, AudioTrack track,
       AudioTrackEndReason endReason) throws NullPointerException {
+    log.info("Track ended");
+
     if (player == null) {
       throw new NullPointerException("Player is null");
     }
@@ -127,9 +127,11 @@ public final class TrackScheduler extends AudioEventAdapter {
       @NonNull AudioTrack track, AudioTrackEndReason endReason) {
     if (!endReason.mayStartNext
         || endReason.equals(AudioTrackEndReason.LOAD_FAILED)) {
-      logger.warn("Could not load next song.");
+      log.warn("Could not load next song.");
       return;
     }
+
+    log.info("Starting next song");
 
     final AudioTrack nextTrack = this.playNextTrack();
 
@@ -137,7 +139,7 @@ public final class TrackScheduler extends AudioEventAdapter {
       MailMan.send(this.lastTextChan, new QueueEmptyEmbed().getEmbed());
       return;
     } else if (nextTrack == null) {
-      logger.info("Next track is null.");
+      log.info("Next track is null.");
       return;
     }
 
@@ -147,7 +149,7 @@ public final class TrackScheduler extends AudioEventAdapter {
       MailMan.send(this.lastTextChan,
           new CurrentSongEmbed(nextTrack, this.store).getEmbed());
     } else {
-      logger.warn("Last text channel is null.");
+      log.warn("Last text channel is null.");
     }
   }
 
@@ -179,18 +181,20 @@ public final class TrackScheduler extends AudioEventAdapter {
   public @NonNull AudioTrack addToQueue(@NonNull TextChannel textChan,
       @Nullable String url, boolean blockPlaylists)
       throws FailedToLoadSongException {
+    log.info("Adding song to queue");
 
     if (textChan != null) {
+      log.info("Setting text channel");
       this.setLastTextChannel(textChan);
     }
 
+    log.info("Text channel is null");
     if (url == null || url.isEmpty()) {
       throw new FailedToLoadSongException("Invalid url.");
     }
 
     final boolean asPlaylist = !blockPlaylists
-        && (url.contains("/playlist/") || url.contains("/album/")
-            || url.contains("?list=") || url.contains("&list="));
+        && PLAYLIST_URI_MATCHERS.stream().anyMatch(url::contains);
 
     final AudioTrack[] audioTracks = this.trackResolver.resolve(url,
         asPlaylist);
@@ -202,15 +206,13 @@ public final class TrackScheduler extends AudioEventAdapter {
     }
 
     if (asPlaylist) {
+      log.info("Adding to queue as playlist");
       this.store.addPlaylist(audioTracks);
     } else {
-      for (AudioTrack audioTrack : audioTracks) {
-        final boolean addResult = this.store.add(audioTrack);
-
-        if (addResult == false) {
-          throw new FailedToLoadSongException("Not found.");
-        }
-
+      log.info("Adding to queue as single track");
+      final boolean addResult = this.store.add(firstTrack);
+      if (addResult == false) {
+        throw new FailedToLoadSongException("Not found.");
       }
     }
 
@@ -224,7 +226,10 @@ public final class TrackScheduler extends AudioEventAdapter {
    * @return boolean whether the action succeeeded.
    */
   public @Nullable AudioTrack skipCurrentSong() {
+    log.info("Skipping current song");
+    log.info("Stopping current song, if one is playing");
     this.audioPlayer.stopTrack();
+    log.info("Playing the next track");
     return this.playNextTrack();
   }
 
@@ -235,6 +240,7 @@ public final class TrackScheduler extends AudioEventAdapter {
    * @return boolean whether the action succeeeded.
    */
   public boolean destroy() {
+    log.info("Destroying track scheduler");
     this.audioPlayer.stopTrack();
     this.store.clear();
     this.store.clearPlaylist();
@@ -248,6 +254,7 @@ public final class TrackScheduler extends AudioEventAdapter {
    * @return boolean whether the action succeeeded.
    */
   public boolean shuffle() {
+    log.info("Shuffling queue");
     this.store.shuffle();
     return true;
   }
@@ -266,24 +273,35 @@ public final class TrackScheduler extends AudioEventAdapter {
    * Plays the next track in the queue if available.
    */
   private @Nullable AudioTrack playNextTrack() {
+    log.info("Playing next track");
     if (this.store.getQueueSize() > 0 || !this.store.hasPlaylist()) {
+      log.info("Playing next track from normal queue");
+
       if (this.store.hasPlaylist()) {
+        log.info("Clearing playlist queue");
         this.store.clearPlaylist();
       }
 
       final AudioTrack nextTrack = this.store.shift();
 
       if (nextTrack != null) {
+        log.info("Found track '{}'", nextTrack.getInfo().title);
         this.audioPlayer.playTrack(nextTrack);
+      } else {
+        log.info("No track found");
       }
 
       return nextTrack;
     }
 
+    log.info("Playing next track from playlist queue");
     final AudioTrack nextTrack = this.store.shiftPlaylist();
 
     if (nextTrack != null) {
+      log.info("Found track '{}'", nextTrack.getInfo().title);
       this.audioPlayer.playTrack(nextTrack);
+    } else {
+      log.info("No track found");
     }
 
     return nextTrack;
@@ -293,6 +311,7 @@ public final class TrackScheduler extends AudioEventAdapter {
    * @param textChan last text channel where a command was invoked.
    */
   private void setLastTextChannel(@NonNull TextChannel textChan) {
+    log.info("Setting last text channel to '{}'", textChan.getName());
     this.lastTextChan = textChan;
   }
 }

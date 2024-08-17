@@ -16,7 +16,9 @@ import com.lm_pakkanen.radio_pele_java.Config;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import jakarta.annotation.Nonnull;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @Lazy
 public final class Store {
