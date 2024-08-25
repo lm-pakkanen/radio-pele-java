@@ -178,17 +178,17 @@ public final class TrackScheduler extends AudioEventAdapter {
    * @return boolean whether the action succeeeded.
    * @throws FailedToLoadSongException
    */
-  public @NonNull AudioTrack addToQueue(@NonNull TextChannel textChan,
-      @Nullable String url, boolean blockPlaylists)
-      throws FailedToLoadSongException {
+  public AudioTrack addToQueue(TextChannel textChan, @Nullable String url,
+      boolean blockPlaylists) throws FailedToLoadSongException {
     log.info("Adding song to queue");
 
     if (textChan != null) {
       log.info("Setting text channel");
       this.setLastTextChannel(textChan);
+    } else {
+      log.info("Text channel is null");
     }
 
-    log.info("Text channel is null");
     if (url == null || url.isEmpty()) {
       throw new FailedToLoadSongException("Invalid url.");
     }
