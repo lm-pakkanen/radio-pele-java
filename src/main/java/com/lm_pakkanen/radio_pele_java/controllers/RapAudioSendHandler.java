@@ -7,10 +7,10 @@ import org.springframework.lang.NonNull;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 
-@Slf4j
+@Log4j2
 public class RapAudioSendHandler implements AudioSendHandler {
 
   private final @NonNull AudioPlayer audioPlayer;

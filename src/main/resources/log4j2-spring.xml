@@ -14,6 +14,14 @@
       <PatternLayout pattern="%d{ISO8601} %-5level[%t] %C: %msg" />
     </File>
 
+    <File name="DEBUG" fileName="./logs/debug.log">
+      <PatternLayout pattern="%d{ISO8601} %-5level[%t] %C: %msg" />
+    </File>
+
+    <File name="WARN" fileName="./logs/warn.log">
+      <PatternLayout pattern="%d{ISO8601} %-5level[%t] %C: %msg" />
+    </File>
+
     <File name="ERROR" fileName="./logs/error.log">
       <PatternLayout pattern="%d{ISO8601} %-5level[%t] %C: %msg%n%throwable" />
     </File>
@@ -23,6 +31,9 @@
     <Root>
       <AppenderRef ref="CONSOLE" />
       <AppenderRef ref="INFO" />
+      <AppenderRef ref="DEBUG" />
+      <AppenderRef ref="WARN" />
+      <AppenderRef ref="ERROR" />
       <!-- <AppenderRef ref="ERROR" /> -->
     </Root>
 

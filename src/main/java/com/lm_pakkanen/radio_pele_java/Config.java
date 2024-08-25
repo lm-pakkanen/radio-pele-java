@@ -12,14 +12,14 @@ import com.lm_pakkanen.radio_pele_java.controllers.commands.CommandBuilder;
 import com.lm_pakkanen.radio_pele_java.interfaces.ICommandListener;
 import com.lm_pakkanen.radio_pele_java.interfaces.IEventListener;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-@Slf4j
+@Log4j2
 @Configuration
 @ComponentScan(basePackages = {
     "com.lm_pakkanen.radio_pele_java.controllers",

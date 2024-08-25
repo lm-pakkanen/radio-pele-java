@@ -20,10 +20,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
 import dev.lavalink.youtube.YoutubeAudioSourceManager;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
-@Slf4j
+@Log4j2
 @Component
 @Lazy
 public final class TrackScheduler extends AudioEventAdapter {

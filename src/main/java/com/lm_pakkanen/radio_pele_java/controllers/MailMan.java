@@ -3,12 +3,12 @@ package com.lm_pakkanen.radio_pele_java.controllers;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
-@Slf4j
+@Log4j2
 public final class MailMan {
 
   /**
