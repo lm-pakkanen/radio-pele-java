@@ -1,0 +1,9 @@
+spring:
+  application: name:radio-pele
+  profiles:
+    active: prod
+  jmx:
+    enabled: false
+logging:
+  level:
+    root: INFO
