@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.lang.NonNull;
 
 import com.lm_pakkanen.radio_pele_java.controllers.commands.CommandBuilder;
@@ -25,7 +24,6 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
     "com.lm_pakkanen.radio_pele_java.controllers",
     "com.lm_pakkanen.radio_pele_java.models"
 })
-@PropertySource("classpath:application.properties")
 public class Config {
 
   public final static int PLAYLIST_MAX_SIZE = 500;
