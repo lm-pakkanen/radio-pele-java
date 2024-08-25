@@ -22,21 +22,13 @@
     </File>
   </Appenders>
   <Loggers>
-    <Logger name="com.lm_pakkanen.radio_pele_java" level="info">
+    <Root level="info">
       <AppenderRef ref="CONSOLE" />
-    </Logger>
-    <Logger name="com.lm_pakkanen.radio_pele_java" level="info">
-      <AppenderRef ref="INFO" />
-    </Logger>
-    <Logger name="com.lm_pakkanen.radio_pele_java" level="debug">
-      <AppenderRef ref="DEBUG" />
-    </Logger>
-    <Logger name="com.lm_pakkanen.radio_pele_java" level="warn">
-      <AppenderRef ref="WARN" />
-    </Logger>
-    <Logger name="com.lm_pakkanen.radio_pele_java" level="error">
-      <AppenderRef ref="ERROR" />
-    </Logger>
+      <AppenderRef level="info" ref="INFO" />
+      <AppenderRef level="debug" ref="DEBUG" />
+      <AppenderRef level="warn" ref="WARN" />
+      <AppenderRef level="error" ref="ERROR" />
+    </Root>
     <Logger name="com.lm_pakkanen.radio_pele_java.Config" level="info" additivity="false">
       <AppenderRef ref="STARTUP" />
     </Logger>
