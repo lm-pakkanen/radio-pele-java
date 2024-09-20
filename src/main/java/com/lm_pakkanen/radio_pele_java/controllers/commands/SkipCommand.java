@@ -1,5 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers.commands;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
@@ -68,15 +70,15 @@ public final class SkipCommand extends BaseCommand implements ICommandListener {
       }
 
       TextChannel textChan = super.getTextChan(event);
-      AudioTrack nextTrack = this.trackScheduler.skipCurrentSong();
+      Optional<AudioTrack> nextTrackOpt = this.trackScheduler.skipCurrentSong();
 
       MailMan.replyInteraction(event, new SongSkippedEmbed().getEmbed());
 
-      if (nextTrack == null) {
-        MailMan.send(textChan, new QueueEmptyEmbed().getEmbed());
+      if (nextTrackOpt.isEmpty()) {
+        MailMan.send(Optional.of(textChan), new QueueEmptyEmbed().getEmbed());
       } else {
-        MailMan.send(textChan,
-            new CurrentSongEmbed(nextTrack, store).getEmbed());
+        MailMan.send(Optional.of(textChan),
+            new CurrentSongEmbed(nextTrackOpt.get(), store).getEmbed());
       }
 
     } catch (InvalidChannelException | IllegalStateException exception) {

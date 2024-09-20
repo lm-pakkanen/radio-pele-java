@@ -1,6 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -125,28 +126,34 @@ public final class TrackScheduler extends AudioEventAdapter {
    */
   public void onTrackEndHandler(@NonNull AudioPlayer player,
       @NonNull AudioTrack track, AudioTrackEndReason endReason) {
-    if (!endReason.mayStartNext
-        || endReason.equals(AudioTrackEndReason.LOAD_FAILED)) {
+
+    if (endReason.equals(AudioTrackEndReason.LOAD_FAILED)) {
       log.warn("Could not load next song.");
+      return;
+    }
+
+    if (!endReason.mayStartNext) {
+      log.warn("Track end handler may not start next song.");
       return;
     }
 
     log.info("Starting next song");
 
-    final AudioTrack nextTrack = this.playNextTrack();
+    final Optional<AudioTrack> nextTrackOpt = this.playNextTrack();
 
-    if (nextTrack == null && this.lastTextChan != null) {
-      MailMan.send(this.lastTextChan, new QueueEmptyEmbed().getEmbed());
+    if (nextTrackOpt.isEmpty() && this.lastTextChan != null) {
+      MailMan.send(Optional.of(this.lastTextChan),
+          new QueueEmptyEmbed().getEmbed());
       return;
-    } else if (nextTrack == null) {
+    } else if (nextTrackOpt.isEmpty()) {
       log.info("Next track is null.");
       return;
     }
 
-    this.audioPlayer.playTrack(nextTrack);
+    final AudioTrack nextTrack = nextTrackOpt.get();
 
     if (this.lastTextChan != null) {
-      MailMan.send(this.lastTextChan,
+      MailMan.send(Optional.of(this.lastTextChan),
           new CurrentSongEmbed(nextTrack, this.store).getEmbed());
     } else {
       log.warn("Last text channel is null.");
@@ -210,7 +217,7 @@ public final class TrackScheduler extends AudioEventAdapter {
       this.store.addPlaylist(audioTracks);
     } else {
       log.info("Adding to queue as single track");
-      final boolean addResult = this.store.add(firstTrack);
+      final boolean addResult = this.store.add(Optional.of(firstTrack));
       if (addResult == false) {
         throw new FailedToLoadSongException("Not found.");
       }
@@ -225,7 +232,7 @@ public final class TrackScheduler extends AudioEventAdapter {
    * 
    * @return boolean whether the action succeeeded.
    */
-  public @Nullable AudioTrack skipCurrentSong() {
+  public Optional<AudioTrack> skipCurrentSong() {
     log.info("Skipping current song");
     log.info("Stopping current song, if one is playing");
     this.audioPlayer.stopTrack();
@@ -272,7 +279,7 @@ public final class TrackScheduler extends AudioEventAdapter {
   /**
    * Plays the next track in the queue if available.
    */
-  private @Nullable AudioTrack playNextTrack() {
+  private Optional<AudioTrack> playNextTrack() {
     log.info("Playing next track");
     if (this.store.getQueueSize() > 0 || !this.store.hasPlaylist()) {
       log.info("Playing next track from normal queue");
@@ -282,29 +289,31 @@ public final class TrackScheduler extends AudioEventAdapter {
         this.store.clearPlaylist();
       }
 
-      final AudioTrack nextTrack = this.store.shift();
+      final Optional<AudioTrack> nextTrackOpt = this.store.shift();
 
-      if (nextTrack != null) {
+      if (nextTrackOpt.isPresent()) {
+        final AudioTrack nextTrack = nextTrackOpt.get();
         log.info("Found track '{}'", nextTrack.getInfo().title);
         this.audioPlayer.playTrack(nextTrack);
       } else {
         log.info("No track found");
       }
 
-      return nextTrack;
+      return nextTrackOpt;
     }
 
     log.info("Playing next track from playlist queue");
-    final AudioTrack nextTrack = this.store.shiftPlaylist();
+    final Optional<AudioTrack> nextTrackOpt = this.store.shiftPlaylist();
 
-    if (nextTrack != null) {
+    if (nextTrackOpt.isPresent()) {
+      final AudioTrack nextTrack = nextTrackOpt.get();
       log.info("Found track '{}'", nextTrack.getInfo().title);
       this.audioPlayer.playTrack(nextTrack);
     } else {
       log.info("No track found");
     }
 
-    return nextTrack;
+    return nextTrackOpt;
   }
 
   /**

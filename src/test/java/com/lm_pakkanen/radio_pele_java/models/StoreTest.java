@@ -1,9 +1,9 @@
 package com.lm_pakkanen.radio_pele_java.models;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
+
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,8 +30,7 @@ public class StoreTest {
     assertEquals(0, this.store.getQueueSize());
     assertEquals(0, this.store.getPlaylistQueueSize());
 
-    final AudioTrack track = StoreTest.audioTrackMock;
-    this.store.add(track);
+    this.store.add(Optional.of(StoreTest.audioTrackMock));
 
     assertEquals(1, this.store.getQueueSize());
     assertEquals(0, this.store.getPlaylistQueueSize());
@@ -78,30 +77,30 @@ public class StoreTest {
   @Test
   @DisplayName("Test shift")
   public void testShift() {
-    final AudioTrack track = this.store.shift();
-    this.store.add(StoreTest.audioTrackMock);
-    final AudioTrack track2 = this.store.shift();
-    assertNull(track);
-    assertNotNull(track2);
+    final Optional<AudioTrack> trackOpt = this.store.shift();
+    this.store.add(Optional.of(StoreTest.audioTrackMock));
+    final Optional<AudioTrack> track2Opt = this.store.shift();
+    assertEquals(true, trackOpt.isEmpty());
+    assertEquals(false, track2Opt.isEmpty());
   }
 
   @Test
   @DisplayName("Test shift playlist")
   public void testShiftPlaylist() {
-    final AudioTrack track = this.store.shiftPlaylist();
+    final Optional<AudioTrack> trackOpt = this.store.shiftPlaylist();
     this.store.addPlaylist(new AudioTrack[] {
         StoreTest.audioTrackMock
     });
-    final AudioTrack track2 = this.store.shiftPlaylist();
-    assertNull(track);
-    assertNotNull(track2);
+    final Optional<AudioTrack> track2Opt = this.store.shiftPlaylist();
+    assertEquals(true, trackOpt.isEmpty());
+    assertEquals(true, track2Opt.isPresent());
   }
 
   @Test
   @DisplayName("Test clearing queue")
   public void testClearingQueue() {
     assertEquals(0, this.store.getQueueSize());
-    this.store.add(StoreTest.audioTrackMock);
+    this.store.add(Optional.of(StoreTest.audioTrackMock));
     assertEquals(1, this.store.getQueueSize());
     this.store.clear();
     assertEquals(0, this.store.getQueueSize());

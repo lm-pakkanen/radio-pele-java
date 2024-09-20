@@ -4,34 +4,37 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.springframework.context.annotation.Lazy;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import com.lm_pakkanen.radio_pele_java.Config;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 
-import jakarta.annotation.Nonnull;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Component
 @Lazy
 public final class Store {
-  private final @Nonnull List<AudioTrack> playListQueue = new ArrayList<>(1);
-  private final @NonNull BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
+  private final List<AudioTrack> playListQueue = new ArrayList<>(1);
+  private final BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
 
   /**
    * Adds a track to the queue.
    * 
    * @param track to add.
    */
-  public boolean add(@Nullable AudioTrack track) {
-    return this.queue.offer(track);
+  public boolean add(Optional<AudioTrack> track) {
+    if (track.isEmpty()) {
+      return false;
+    }
+
+    return this.queue.offer(track.get());
   }
 
   /**
@@ -39,7 +42,7 @@ public final class Store {
    * 
    * @param urls to add.
    */
-  public void addPlaylist(@NonNull AudioTrack[] audioTracks) {
+  public void addPlaylist(AudioTrack[] audioTracks) {
     final int playlistSize = Math.min(Config.PLAYLIST_MAX_SIZE,
         audioTracks.length);
 
@@ -53,8 +56,19 @@ public final class Store {
    * 
    * @return the first track from the queue or null if queue is empty.
    */
-  public @Nullable AudioTrack shift() {
-    return this.queue.poll();
+  public Optional<AudioTrack> shift() {
+    log.info("Shifting queue");
+    Optional<AudioTrack> trackOpt = Optional.ofNullable(queue.poll());
+
+    if (trackOpt.isPresent()) {
+      AudioTrackInfo trackInfo = trackOpt.get().getInfo();
+      String title = trackInfo == null ? "Unknown title" : trackInfo.title;
+      log.debug("Shited queue, found track: '{}'", title);
+    } else {
+      log.debug("Track not found");
+    }
+
+    return trackOpt;
   }
 
   /**
@@ -62,12 +76,12 @@ public final class Store {
    * 
    * @return the first track from the queue or null if queue is empty.
    */
-  public @Nullable AudioTrack shiftPlaylist() {
+  public Optional<AudioTrack> shiftPlaylist() {
     if (this.playListQueue.isEmpty()) {
-      return null;
+      return Optional.empty();
     }
 
-    return this.playListQueue.remove(0);
+    return Optional.ofNullable(this.playListQueue.remove(0));
   }
 
   /**

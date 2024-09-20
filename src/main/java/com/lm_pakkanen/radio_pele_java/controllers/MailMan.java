@@ -1,7 +1,6 @@
 package com.lm_pakkanen.radio_pele_java.controllers;
 
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
+import java.util.Optional;
 
 import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -17,31 +16,32 @@ public final class MailMan {
    * @param textChan to reply to.
    * @param message  to reply with.
    */
-  public static void send(@Nullable TextChannel textChan,
-      @NonNull String message) {
-    if (textChan == null) {
+  public static void send(Optional<TextChannel> textChanOpt, String message) {
+    if (textChanOpt.isEmpty()) {
       log.error("TextChannel is null.");
       return;
     }
 
+    final TextChannel textChan = textChanOpt.get();
     log.info(String.format("Sending message to channel '%s': %s",
         textChan.getName(), message));
-
     textChan.sendMessage(message).queue();
   }
 
   /**
    * Send a new embed to specified text channel.
    * 
-   * @param textChan to reply to.
-   * @param embed    to reply with.
+   * @param textChanOpt to reply to.
+   * @param embed       to reply with.
    */
-  public static void send(@Nullable TextChannel textChan,
-      @NonNull MessageEmbed embed) {
-    if (textChan == null) {
+  public static void send(Optional<TextChannel> textChanOpt,
+      MessageEmbed embed) {
+    if (textChanOpt.isEmpty()) {
       log.error("TextChannel is null.");
       return;
     }
+
+    final TextChannel textChan = textChanOpt.get();
 
     log.info(String.format("Sending message to channel '%s': %s",
         textChan.getName(), embed.toString()));
@@ -56,8 +56,8 @@ public final class MailMan {
    * @param event   to reply to.
    * @param message to reply with.
    */
-  public static void replyInteraction(
-      @NonNull SlashCommandInteractionEvent event, @NonNull String message) {
+  public static void replyInteraction(SlashCommandInteractionEvent event,
+      String message) {
 
     log.info(String.format("Replying to message: %s", message));
 
@@ -75,9 +75,8 @@ public final class MailMan {
    * @param event to reply to.
    * @param embed to reply with.
    */
-  public static void replyInteraction(
-      @NonNull SlashCommandInteractionEvent event,
-      @NonNull MessageEmbed embed) {
+  public static void replyInteraction(SlashCommandInteractionEvent event,
+      MessageEmbed embed) {
 
     log.info(String.format("Replying to message: %s", embed.toString()));
 
