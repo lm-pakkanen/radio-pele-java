@@ -128,7 +128,7 @@ public final class TrackScheduler extends AudioEventAdapter {
       @NonNull AudioTrack track, AudioTrackEndReason endReason) {
 
     if (endReason.equals(AudioTrackEndReason.LOAD_FAILED)) {
-      log.warn("Could not load next song.");
+      log.warn("Could not load next song: '{}'.", endReason);
       return;
     }
 
