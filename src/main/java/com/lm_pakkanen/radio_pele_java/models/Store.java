@@ -102,17 +102,21 @@ public final class Store {
    * Shuffles the queue.
    */
   public void shuffle() {
+    log.info("Shuffling queue");
     final List<AudioTrack> shuffledTracks = new ArrayList<>(this.queue);
     Collections.shuffle(shuffledTracks);
     this.queue.clear();
     this.queue.addAll(shuffledTracks);
+    log.debug("Queue shuffled");
   }
 
   /**
    * Shuffles the playlist queue.
    */
   public void shufflePlaylist() {
+    log.debug("Shuffling playlist queue");
     if (!this.hasPlaylist()) {
+      log.debug("Could not shuffle playlist queue: not a playlist");
       return;
     }
 
@@ -120,7 +124,7 @@ public final class Store {
     Collections.shuffle(shuffledUrls);
     this.playListQueue.clear();
     this.playListQueue.addAll(shuffledUrls);
-
+    log.debug("Playlist queue shuffled");
   }
 
   /**
