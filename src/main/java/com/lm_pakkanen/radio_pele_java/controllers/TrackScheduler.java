@@ -2,7 +2,6 @@ package com.lm_pakkanen.radio_pele_java.controllers;
 
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
@@ -19,8 +18,9 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-
 import dev.lavalink.youtube.YoutubeAudioSourceManager;
+import dev.lavalink.youtube.clients.WebEmbedded;
+import dev.lavalink.youtube.clients.skeleton.Client;
 import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
@@ -72,8 +72,10 @@ public final class TrackScheduler extends AudioEventAdapter {
 
     this.audioPlayerManager
         .setFrameBufferDuration(TrackScheduler.FRAME_BUFFER_DURATION_MS);
-    this.audioPlayerManager
-        .registerSourceManager(new YoutubeAudioSourceManager());
+    this.audioPlayerManager.registerSourceManager(
+        new YoutubeAudioSourceManager(true, true, true, new Client[] {
+            new WebEmbedded()
+        }));
 
     AudioSourceManagers.registerRemoteSources(this.audioPlayerManager,
         com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager.class);
