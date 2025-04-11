@@ -74,7 +74,7 @@ public final class TrackScheduler extends AudioEventAdapter {
     this.audioPlayerManager
         .setFrameBufferDuration(TrackScheduler.FRAME_BUFFER_DURATION_MS);
 
-    Web.setPoTokenAndVisitorData(
+    WebEmbedded.setPoTokenAndVisitorData(
         "MpQBQPNRErmbRoVAy3P1fBSksUAiFIa41fo0g9xrmaa9Iueoxi5MFD_IIcZvQ4tTdBb2dunage4GNx-jTgsKQmoOM7tVB8nyVsSnpSVxtSUN7n4zOA1EEGND_dzU2Wf1vhsiGfgeLEwaxeFxAz_H7sy0mcPbULIpuZ_WO43g3CuslWqA4--znDOhaCCKGUMo5If2z_av5Q==",
         "CgtGVzc4Z3dHaUh5MCi_uea_BjInCgJGSRIhEh0SGwsMDg8QERITFBUWFxgZGhscHR4fICEiIyQlJiBT");
 
