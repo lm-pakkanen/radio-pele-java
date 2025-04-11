@@ -20,7 +20,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import dev.lavalink.youtube.YoutubeAudioSourceManager;
 import dev.lavalink.youtube.clients.Music;
-import dev.lavalink.youtube.clients.TvHtml5Embedded;
 import dev.lavalink.youtube.clients.skeleton.Client;
 import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
