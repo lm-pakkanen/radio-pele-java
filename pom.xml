@@ -120,7 +120,7 @@
     <dependency>
       <groupId>dev.lavalink.youtube</groupId>
       <artifactId>v2</artifactId>
-      <version>130561e2d2f76605eb08b2c9cc4facbf400caccb-SNAPSHOT</version>
+      <version>0e5cfca4e88c32db430ce76e6866b13035c85d22-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>se.michaelthelin.spotify</groupId>
