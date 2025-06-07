@@ -30,7 +30,15 @@
       <name>Lavalink Repository</name>
       <url>https://maven.lavalink.dev/releases</url>
     </repository>
-  </repositories>
+    <repository>
+      <id>arbjergDev-snapshots</id>
+      <name>Lavalink Snapshots Repository</name>
+      <url>https://maven.lavalink.dev/snapshots</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+ </repositories>
   <build>
     <plugins>
       <plugin>
