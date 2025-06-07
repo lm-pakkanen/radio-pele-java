@@ -6,6 +6,6 @@ WORKDIR /radio-pele
 
 COPY . .
 
-RUN --mount=type=cache,target=/tmp/build ./mvnw clean install -DskipTests
+RUN --mount=type=cache,target=/tmp/build ./mvnw clean package -DskipTests
 
 ENTRYPOINT ["sh", "entrypoint.sh"]
