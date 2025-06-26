@@ -17,7 +17,9 @@
   <properties>
     <maven.compiler.source>24</maven.compiler.source>
     <maven.compiler.target>24</maven.compiler.target>
-   <java.version>24</java.version>
+    <java.version>24</java.version>
+    <lavaplayer.version>2.2.4</lavaplayer.version>
+    <yt.version>1.13.3</yt.version>
   </properties>
 
   <repositories>
@@ -109,12 +111,12 @@
     <dependency>
       <groupId>dev.arbjerg</groupId>
       <artifactId>lavaplayer</artifactId>
-      <version>2.2.3</version>
+      <version>${lavaplayer.version}</version>
     </dependency>
     <dependency>
       <groupId>dev.lavalink.youtube</groupId>
       <artifactId>v2</artifactId>
-      <version>1.13.2</version>
+      <version>${yt.version}</version>
     </dependency>
     <dependency>
       <groupId>se.michaelthelin.spotify</groupId>
