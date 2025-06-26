@@ -19,6 +19,9 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import dev.lavalink.youtube.YoutubeAudioSourceManager;
+import dev.lavalink.youtube.YoutubeSourceOptions;
+import dev.lavalink.youtube.clients.Tv;
+import dev.lavalink.youtube.clients.TvHtml5Embedded;
 import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
@@ -70,8 +73,15 @@ public final class TrackScheduler extends AudioEventAdapter {
 
     this.audioPlayerManager
         .setFrameBufferDuration(TrackScheduler.FRAME_BUFFER_DURATION_MS);
-    this.audioPlayerManager
-        .registerSourceManager(new YoutubeAudioSourceManager());
+
+    final YoutubeSourceOptions youtubeSourceOptions = new YoutubeSourceOptions()
+        .setAllowDirectPlaylistIds(true).setAllowDirectVideoIds(true)
+        .setAllowSearch(true);
+
+    final YoutubeAudioSourceManager youtubeSourceManager = new YoutubeAudioSourceManager(
+        youtubeSourceOptions, new TvHtml5Embedded(), new Tv());
+
+    this.audioPlayerManager.registerSourceManager(youtubeSourceManager);
 
     AudioSourceManagers.registerRemoteSources(this.audioPlayerManager,
         com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager.class);
