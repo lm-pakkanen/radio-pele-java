@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 @Log4j2
 @Configuration
@@ -64,7 +65,7 @@ public class Config {
 
     final NodeOptions primaryNodeOptions = new NodeOptions.Builder()
         .setName("primary").setServerUri("http://lavalink:2333")
-        .setPassword(lavalinkPassword).build();
+        .setPassword(lavalinkPassword).setRegionFilter(null).build();
 
     final LavalinkNode node = client.addNode(primaryNodeOptions);
     // TODO handle node connection errors.
@@ -100,6 +101,7 @@ public class Config {
 
     clientBuilder.setStatus(OnlineStatus.ONLINE);
     clientBuilder.setActivity(Activity.playing(botStatusMessage));
+    clientBuilder.enableCache(CacheFlag.VOICE_STATE);
 
     log.info("Building JDA instance.");
     final JDA client = clientBuilder.build();

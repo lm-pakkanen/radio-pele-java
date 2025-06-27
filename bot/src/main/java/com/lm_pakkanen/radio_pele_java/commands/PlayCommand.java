@@ -11,8 +11,6 @@ import com.lm_pakkanen.radio_pele_java.models.exceptions.InvalidChannelException
 import com.lm_pakkanen.radio_pele_java.models.exceptions.NotInChannelException;
 import com.lm_pakkanen.radio_pele_java.models.message_embeds.ExceptionEmbed;
 import com.lm_pakkanen.radio_pele_java.models.message_embeds.SongAddedEmbed;
-import dev.arbjerg.lavalink.client.LavalinkClient;
-import dev.arbjerg.lavalink.client.Link;
 import dev.arbjerg.lavalink.client.player.Track;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
@@ -33,7 +31,6 @@ public final class PlayCommand extends BaseCommand implements ICommandListener {
 
   private final Store store;
   private final TrackScheduler trackScheduler;
-  private final LavalinkClient lavalinkClient;
 
   @Override
   public String getCommandName() {
@@ -73,11 +70,10 @@ public final class PlayCommand extends BaseCommand implements ICommandListener {
 
       final TextChannel textChan = super.getTextChan(event);
       final long guildId = event.getGuild().getIdLong();
-      final Link link = lavalinkClient.getOrCreateLink(guildId);
 
       final String url = event.getOption("url").getAsString();
 
-      final Track addedTrack = this.trackScheduler.addToQueue(textChan, link,
+      final Track addedTrack = this.trackScheduler.addToQueue(textChan, guildId,
           url, true);
 
       final AudioManager audioManager = event.getGuild().getAudioManager();

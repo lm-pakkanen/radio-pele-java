@@ -73,10 +73,9 @@ public final class PlayListCommand extends BaseCommand
     try {
       final TextChannel textChan = super.getTextChan(event);
       final long guildId = event.getGuild().getIdLong();
-      final Link link = lavalinkClient.getOrCreateLink(guildId);
 
       final String url = event.getOption("url").getAsString();
-      final Track addedTrack = this.trackScheduler.addToQueue(textChan, link,
+      final Track addedTrack = this.trackScheduler.addToQueue(textChan, guildId,
           url, false);
 
       final AudioManager audioManager = event.getGuild().getAudioManager();

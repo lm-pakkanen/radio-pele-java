@@ -27,7 +27,7 @@ public final class TrackScheduler {
   private final SpotifyController spotifyController;
   private final TrackResolver trackResolver;
 
-  private @Nullable Link link;
+  private @Nullable Long guildId;
   private @Nullable TextChannel lastTextChan;
 
   public TrackScheduler(Store store, TidalController tidalController,
@@ -49,7 +49,7 @@ public final class TrackScheduler {
    * @return whether if the audio player is currently playing a track.
    */
   public boolean isPlaying() {
-    return LavaLinkUtil.getPlayer(link).getTrack() != null;
+    return LavaLinkUtil.getPlayer(guildId).getTrack() != null;
   }
 
   /**
@@ -77,8 +77,9 @@ public final class TrackScheduler {
    * @return boolean whether the action succeeeded.
    * @throws FailedToLoadSongException
    */
-  public Track addToQueue(TextChannel textChan, Link link, @Nullable String url,
-      boolean blockPlaylists) throws FailedToLoadSongException {
+  public Track addToQueue(TextChannel textChan, long guildId,
+      @Nullable String url, boolean blockPlaylists)
+      throws FailedToLoadSongException {
 
     log.info("Adding song to queue");
 
@@ -89,8 +90,8 @@ public final class TrackScheduler {
       log.info("Text channel is null");
     }
 
-    log.info("Setting link");
-    this.link = link;
+    log.info("Setting guild ID");
+    this.guildId = guildId;
 
     if (url == null || url.isEmpty()) {
       throw new FailedToLoadSongException("Invalid url.");
@@ -99,7 +100,7 @@ public final class TrackScheduler {
     final boolean asPlaylist = !blockPlaylists
         && PLAYLIST_URI_MATCHERS.stream().anyMatch(url::contains);
 
-    final List<Track> audioTracks = this.trackResolver.resolve(link, url,
+    final List<Track> audioTracks = this.trackResolver.resolve(guildId, url,
         asPlaylist);
 
     final Track firstTrack = audioTracks.getFirst();
@@ -222,7 +223,7 @@ public final class TrackScheduler {
 
       nextTrackOpt.ifPresentOrElse(nextTrack -> {
         log.info("Found track '{}'", nextTrack.getInfo().getTitle());
-        LavaLinkUtil.getPlayer(link).setTrack(nextTrack).subscribe();
+        LavaLinkUtil.getPlayer(guildId).setTrack(nextTrack).subscribe();
       }, () -> log.info("No track found"));
 
       return nextTrackOpt;
@@ -233,7 +234,7 @@ public final class TrackScheduler {
 
     nextTrackOpt.ifPresentOrElse(nextTrack -> {
       log.info("Found track '{}'", nextTrack.getInfo().getTitle());
-      LavaLinkUtil.getPlayer(link).setTrack(nextTrack).subscribe();
+      LavaLinkUtil.getPlayer(guildId).setTrack(nextTrack).subscribe();
     }, () -> log.info("No track found"));
 
     return nextTrackOpt;
@@ -241,7 +242,7 @@ public final class TrackScheduler {
 
   private void stopCurrentSong() {
     log.info("Stopping current song, if one is playing");
-    LavaLinkUtil.getPlayer(link).setPaused(false).setTrack(null).subscribe();
+    LavaLinkUtil.getPlayer(guildId).setPaused(false).setTrack(null).subscribe();
   }
 
   private void setLastTextChannel(TextChannel textChan) {

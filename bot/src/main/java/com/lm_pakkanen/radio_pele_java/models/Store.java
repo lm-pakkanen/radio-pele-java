@@ -57,16 +57,15 @@ public final class Store {
     log.info("Shifting queue");
     Optional<Track> trackOpt = Optional.ofNullable(queue.poll());
 
-    if (trackOpt.isPresent()) {
-
-      final TrackInfo trackInfo = trackOpt.get().getInfo();
+    trackOpt.ifPresentOrElse(track -> {
+      final TrackInfo trackInfo = track.getInfo();
       final String title = trackInfo == null ? "Unknown title"
           : trackInfo.getTitle();
 
       log.debug("Shited queue, found track: '{}'", title);
-    } else {
+    }, () -> {
       log.debug("Track not found");
-    }
+    });
 
     return trackOpt;
   }

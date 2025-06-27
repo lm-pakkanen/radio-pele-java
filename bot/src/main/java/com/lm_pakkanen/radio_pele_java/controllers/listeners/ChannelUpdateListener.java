@@ -23,6 +23,7 @@ public class ChannelUpdateListener implements IEventListener {
    */
   @Override
   public void onEvent(GenericEvent event) {
+
     if (!(event instanceof GuildVoiceUpdateEvent)) {
       // Don't care
       return;

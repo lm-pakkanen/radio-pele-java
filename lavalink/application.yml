@@ -5,17 +5,23 @@ lavalink:
   server:
     sources:
       youtube: false
-      bandcamp: true
+      bandcamp: false
       soundcloud: true
       twitch: true
-      vimeo: true
-      nico: true
-      http: true
-      local: true
+      vimeo: false
+      nico: false
+      http: false
+      local: false
     youtubePlaylistLoadLimit: 1 # Number of pages, 100 videos per page
     youtubeSearchEnabled: true
     soundcloudSearchEnabled: true
-    gc-warnings: true
+    bufferDurationMs: 10000
+    frameBufferDurationMs: 5000
+    trackStuckThresholdMs: 10000
+    opusEncodingQuality: 0
+    resamplingQuality: LOW
+    playerUpdateInterval: 10
+    gc-warnings: false
     timeouts:
       connectTimeoutMs: 3000
       connectionRequestTimeoutMs: 3000
@@ -27,30 +33,22 @@ plugins:
     allowDirectVideoIds: true
     allowDirectPlaylistIds: true
     clients:
-      - WEB
-      - MWEB
       - WEBEMBEDDED
       - ANDROID_VR
-      - ANDROID_MUSIC
-      - IOS
 metrics:
   prometheus:
-    enabled: true
+    enabled: false
     endpoint: /metrics
 logging:
-  file:
-    path: ./logs/
   level:
     root: INFO
     lavalink: INFO
+    lavalink.server.io.SocketContext: INFO
+    com.sedmelluq.discord.lavaplayer.tools.ExceptionTools: INFO
+    dev.lavalink.youtube: INFO
   request:
-    enabled: true
+    enabled: false
     includeClientInfo: true
     includeHeaders: true
     includeQueryString: true
     includePayload: true
-    maxPayloadLength: 10000
-  logback:
-    rollingpolicy:
-      max-file-size: 1GB
-      max-history: 30

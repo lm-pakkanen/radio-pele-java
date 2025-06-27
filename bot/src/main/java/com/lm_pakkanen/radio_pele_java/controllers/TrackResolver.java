@@ -7,6 +7,8 @@ import java.util.List;
 import org.springframework.util.Assert;
 import com.lm_pakkanen.radio_pele_java.Config;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException;
+import com.lm_pakkanen.radio_pele_java.util.LavaLinkUtil;
+
 import dev.arbjerg.lavalink.client.Link;
 import dev.arbjerg.lavalink.client.player.LavalinkLoadResult;
 import dev.arbjerg.lavalink.client.player.Track;
@@ -29,7 +31,7 @@ public final class TrackResolver {
    * @return resolved tracks.
    * @throws FailedToLoadSongException
    */
-  public List<Track> resolve(Link link, String url, boolean asPlaylist)
+  public List<Track> resolve(long guildId, String url, boolean asPlaylist)
       throws FailedToLoadSongException {
 
     final int capacity = asPlaylist ? Config.PLAYLIST_MAX_SIZE : 1;
@@ -74,7 +76,8 @@ public final class TrackResolver {
     final AudioLoader audioLoader = new AudioLoader(asPlaylist);
 
     finalUrls.stream().forEach(finalUrl -> {
-      final LavalinkLoadResult loadResult = link.loadItem(finalUrl).block();
+      final LavalinkLoadResult loadResult = LavaLinkUtil.getLink(guildId)
+          .loadItem(finalUrl).block();
       audioLoader.accept(loadResult);
     });
 
