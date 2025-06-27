@@ -1,0 +1,31 @@
+services:
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4-alpine
+    container_name: radio_pele_lavalink
+    restart: unless-stopped
+    environment:
+      - SERVER_PORT=2333
+      # This is not actually a secret, so whatever. The container is not exposed to the internet.
+      - LAVALINK_SERVER_PASSWORD=j^t411l0@xVJy4pg%!0sfDge6bp4bPpS8aT1r&Ipc^Ir^JCx*epMjo$6@2EA
+    volumes:
+      - ./lavalink/application.yml:/opt/Lavalink/application.yml
+      - ./lavalink/plugins/:/opt/Lavalink/plugins/
+    networks:
+      - lavalink
+    expose:
+      - 2333
+    ports:
+      - "2333:2333"
+      # - "127.0.0.1:2333:2333"
+  bot:
+    build: ./bot
+    container_name: radio_pele_bot
+    restart: unless-stopped
+    depends_on:
+      - lavalink
+    networks:
+      - lavalink
+networks:
+  # Network for Lavalink service; accessible to the bot container
+  lavalink:
+    name: lavalink
