@@ -16,7 +16,7 @@ lavalink:
     youtubeSearchEnabled: true
     soundcloudSearchEnabled: true
     bufferDurationMs: 10000
-    frameBufferDurationMs: 5000
+    frameBufferDurationMs: 10000
     trackStuckThresholdMs: 10000
     opusEncodingQuality: 0
     resamplingQuality: LOW

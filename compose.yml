@@ -1,9 +1,10 @@
 services:
   lavalink:
-    image: ghcr.io/lavalink-devs/lavalink:4-alpine
+    image: ghcr.io/lavalink-devs/lavalink:4-distroless
     container_name: radio_pele_lavalink
     restart: unless-stopped
     environment:
+      - _JAVA_OPTIONS=-Xmx4G
       - SERVER_PORT=2333
       # This is not actually a secret, so whatever. The container is not exposed to the internet.
       - LAVALINK_SERVER_PASSWORD=j^t411l0@xVJy4pg%!0sfDge6bp4bPpS8aT1r&Ipc^Ir^JCx*epMjo$6@2EA
@@ -14,15 +15,12 @@ services:
       - lavalink
     expose:
       - 2333
-    ports:
-      - "2333:2333"
-      # - "127.0.0.1:2333:2333"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:2333/metrics"]
-      start_period: 10s
-      interval: 10s
-      timeout: 5s
-      retries: 360 # 60min * 60s / 10s = 360 retries for 1hr
+    #healthcheck:
+      #test: ["CMD", "curl", "-f", "http://localhost:2333/metrics"]
+      #start_period: 10s
+      #interval: 10s
+      #timeout: 5s
+      #retries: 360 # 60min * 60s / 10s = 360 retries for 1hr
   bot:
     build: ./bot
     container_name: radio_pele_bot
