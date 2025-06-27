@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline
 COPY ./src ./src
 RUN --mount=type=cache,target=/tmp/build mvn clean package -DskipTests
 
-FROM eclipse-temurin:${JAVA_VERSION}-jdk AS jdk
+FROM eclipse-temurin:${JAVA_VERSION}-jre-alpine AS jdk
 
 WORKDIR /radio-pele
 
