@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch bot",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "com.lm_pakkanen.radio_pele_java.RadioPeleJavaApplication",
+      "projectName": "radio_pele_java",
+      "cwd": "${workspaceFolder}/bot"
+    }
+  ]
+}
