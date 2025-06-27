@@ -8,6 +8,7 @@ import com.lm_pakkanen.radio_pele_java.models.Store;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException;
 import com.lm_pakkanen.radio_pele_java.models.message_embeds.CurrentSongEmbed;
 import com.lm_pakkanen.radio_pele_java.models.message_embeds.QueueEmptyEmbed;
+import com.lm_pakkanen.radio_pele_java.util.LavaLinkUtil;
 import dev.arbjerg.lavalink.client.Link;
 import dev.arbjerg.lavalink.client.player.Track;
 import dev.arbjerg.lavalink.protocol.v4.Message.EmittedEvent.TrackEndEvent.AudioTrackEndReason;
@@ -48,8 +49,7 @@ public final class TrackScheduler {
    * @return whether if the audio player is currently playing a track.
    */
   public boolean isPlaying() {
-    return Optional.ofNullable(link).orElseThrow().getCachedPlayer()
-        .getTrack() != null;
+    return LavaLinkUtil.getPlayer(link).getTrack() != null;
   }
 
   /**
@@ -209,9 +209,6 @@ public final class TrackScheduler {
    */
   private Optional<Track> playNextTrack() {
 
-    final Link notNullLink = Optional.ofNullable(this.link).orElseThrow(
-        () -> new IllegalStateException("Audio link not available."));
-
     log.info("Playing next track");
     if (this.store.getQueueSize() > 0 || !this.store.hasPlaylist()) {
       log.info("Playing next track from normal queue");
@@ -225,7 +222,7 @@ public final class TrackScheduler {
 
       nextTrackOpt.ifPresentOrElse(nextTrack -> {
         log.info("Found track '{}'", nextTrack.getInfo().getTitle());
-        notNullLink.createOrUpdatePlayer().setTrack(nextTrack).subscribe();
+        LavaLinkUtil.getPlayer(link).setTrack(nextTrack).subscribe();
       }, () -> log.info("No track found"));
 
       return nextTrackOpt;
@@ -236,7 +233,7 @@ public final class TrackScheduler {
 
     nextTrackOpt.ifPresentOrElse(nextTrack -> {
       log.info("Found track '{}'", nextTrack.getInfo().getTitle());
-      notNullLink.createOrUpdatePlayer().setTrack(nextTrack).subscribe();
+      LavaLinkUtil.getPlayer(link).setTrack(nextTrack).subscribe();
     }, () -> log.info("No track found"));
 
     return nextTrackOpt;
@@ -244,8 +241,7 @@ public final class TrackScheduler {
 
   private void stopCurrentSong() {
     log.info("Stopping current song, if one is playing");
-    Optional.ofNullable(link).orElseThrow().getCachedPlayer().setPaused(false)
-        .setTrack(null).subscribe();
+    LavaLinkUtil.getPlayer(link).setPaused(false).setTrack(null).subscribe();
   }
 
   private void setLastTextChannel(TextChannel textChan) {

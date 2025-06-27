@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.util.Assert;
 import com.lm_pakkanen.radio_pele_java.Config;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException;
 import dev.arbjerg.lavalink.client.Link;
@@ -38,7 +39,8 @@ public final class TrackResolver {
 
     try {
       uri = new URI(url);
-    } catch (URISyntaxException _) {
+      Assert.notNull(uri.getHost(), "URI host is null");
+    } catch (URISyntaxException | IllegalArgumentException _) {
       throw new FailedToLoadSongException("Invalid URL.");
     }
 

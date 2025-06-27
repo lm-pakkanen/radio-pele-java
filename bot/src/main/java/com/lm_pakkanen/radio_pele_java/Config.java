@@ -63,7 +63,7 @@ public class Config {
     final LavalinkClient client = new LavalinkClient(userId);
 
     final NodeOptions primaryNodeOptions = new NodeOptions.Builder()
-        .setName("primary").setServerUri("http://localhost:2333")
+        .setName("primary").setServerUri("http://lavalink:2333")
         .setPassword(lavalinkPassword).build();
 
     final LavalinkNode node = client.addNode(primaryNodeOptions);
