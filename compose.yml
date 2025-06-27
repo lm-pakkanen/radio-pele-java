@@ -17,6 +17,12 @@ services:
     ports:
       - "2333:2333"
       # - "127.0.0.1:2333:2333"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2333/metrics"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 360 # 60min * 60s / 10s = 360 retries for 1hr
   bot:
     build: ./bot
     container_name: radio_pele_bot
