@@ -8,8 +8,6 @@ import org.springframework.util.Assert;
 import com.lm_pakkanen.radio_pele_java.Config;
 import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException;
 import com.lm_pakkanen.radio_pele_java.util.LavaLinkUtil;
-
-import dev.arbjerg.lavalink.client.Link;
 import dev.arbjerg.lavalink.client.player.LavalinkLoadResult;
 import dev.arbjerg.lavalink.client.player.Track;
 import lombok.RequiredArgsConstructor;
@@ -25,11 +23,11 @@ public final class TrackResolver {
    * an exception. Uses the LavaPlayer library to resolve the track. Spotify API
    * is used to resolve Spotify URLs into track and artist names.
    * 
-   * @param link       to use for resolving.
+   * @param guildId       to use for connecting later on.
    * @param url        to try to resolve.
    * @param asPlaylist whether to resolve as a playlist or a single track.
    * @return resolved tracks.
-   * @throws FailedToLoadSongException
+   * @throws FailedToLoadSongException when song(s) cannot be resolved
    */
   public List<Track> resolve(long guildId, String url, boolean asPlaylist)
       throws FailedToLoadSongException {
