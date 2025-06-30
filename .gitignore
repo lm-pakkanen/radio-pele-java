@@ -1,4 +1,6 @@
+.idea/
 target/
+out/
 logs/
 **/resources/application-prod.yml
 **/*.log
