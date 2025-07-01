@@ -1,113 +1,113 @@
-package com.lm_pakkanen.radio_pele_java.models
+package com.lm_pakkanen.radio_pele_java.models;
 
-import dev.arbjerg.lavalink.client.player.Track
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Configuration
-import java.util.*
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Configuration;
+import dev.arbjerg.lavalink.client.player.Track;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-internal class StoreTest {
+class StoreTest {
 
-  private var store: Store? = null
+  private static final Track audioTrackMock = mock(Track.class);
+
+  private Store store;
 
   @BeforeEach
-  fun setUp() {
-    this.store = Store()
+  void setUp() {
+    this.store = new Store();
   }
 
   @Test
   @DisplayName("Test adding a track to the queue")
-  fun testAddingTrackToQ() {
-    Assertions.assertEquals(0, this.store!!.queueSize)
-    Assertions.assertEquals(0, this.store!!.playlistQueueSize)
+  void testAddingTrackToQ() {
+    assertEquals(0, this.store.getQueueSize());
+    assertEquals(0, this.store.getPlaylistQueueSize());
 
-    this.store!!.add(Optional.of(audioTrackMock))
+    this.store.add(Optional.of(StoreTest.audioTrackMock));
 
-    Assertions.assertEquals(1, this.store!!.queueSize)
-    Assertions.assertEquals(0, this.store!!.playlistQueueSize)
+    assertEquals(1, this.store.getQueueSize());
+    assertEquals(0, this.store.getPlaylistQueueSize());
   }
 
   @Test
   @DisplayName("Test adding a playlist to the queue")
-  fun testAddingPlaylistToQ() {
-    Assertions.assertEquals(0, this.store!!.queueSize)
-    Assertions.assertEquals(0, this.store!!.playlistQueueSize)
+  void testAddingPlaylistToQ() {
+    assertEquals(0, this.store.getQueueSize());
+    assertEquals(0, this.store.getPlaylistQueueSize());
 
-    val tracks = listOf(
-      audioTrackMock,
-      audioTrackMock
-    )
+    final List<Track> tracks = List.of(StoreTest.audioTrackMock,
+        StoreTest.audioTrackMock);
 
-    this.store!!.addPlaylist(tracks)
+    this.store.addPlaylist(tracks);
 
-    Assertions.assertEquals(0, this.store!!.queueSize)
-    Assertions.assertEquals(2, this.store!!.playlistQueueSize)
+    assertEquals(0, this.store.getQueueSize());
+    assertEquals(2, this.store.getPlaylistQueueSize());
   }
 
   @Test
   @DisplayName("Test adding a playlist to the queue when a playlist already exists in the queue")
-  fun testAddingPlaylistToQWhenExistingPlaylist() {
-    Assertions.assertEquals(0, this.store!!.queueSize)
-    Assertions.assertEquals(0, this.store!!.playlistQueueSize)
+  void testAddingPlaylistToQWhenExistingPlaylist() {
+    assertEquals(0, this.store.getQueueSize());
+    assertEquals(0, this.store.getPlaylistQueueSize());
 
-    val tracks = listOf(audioTrackMock)
-    val tracks2 = listOf(audioTrackMock, audioTrackMock)
+    final List<Track> tracks = List.of(StoreTest.audioTrackMock);
 
-    this.store!!.addPlaylist(tracks)
-    this.store!!.addPlaylist(tracks2)
+    final List<Track> tracks2 = List.of(StoreTest.audioTrackMock,
+        StoreTest.audioTrackMock);
 
-    Assertions.assertEquals(0, this.store!!.queueSize)
-    Assertions.assertEquals(2, this.store!!.playlistQueueSize)
+    this.store.addPlaylist(tracks);
+    this.store.addPlaylist(tracks2);
+
+    assertEquals(0, this.store.getQueueSize());
+    assertEquals(2, this.store.getPlaylistQueueSize());
   }
 
   @Test
   @DisplayName("Test shift")
-  fun testShift() {
-    val trackOpt = this.store!!.shift()
-    this.store!!.add(Optional.of(audioTrackMock))
-    val track2Opt = this.store!!.shift()
-    Assertions.assertEquals(true, trackOpt.isEmpty)
-    Assertions.assertEquals(false, track2Opt.isEmpty)
+  void testShift() {
+    final Optional<Track> trackOpt = this.store.shift();
+    this.store.add(Optional.of(StoreTest.audioTrackMock));
+    final Optional<Track> track2Opt = this.store.shift();
+    assertEquals(true, trackOpt.isEmpty());
+    assertEquals(false, track2Opt.isEmpty());
   }
 
   @Test
   @DisplayName("Test shift playlist")
-  fun testShiftPlaylist() {
-    val trackOpt = this.store!!.shiftPlaylist()
-    this.store!!.addPlaylist(listOf(audioTrackMock))
-    val track2Opt = this.store!!.shiftPlaylist()
-    Assertions.assertEquals(true, trackOpt.isEmpty)
-    Assertions.assertEquals(true, track2Opt.isPresent)
+  void testShiftPlaylist() {
+    final Optional<Track> trackOpt = this.store.shiftPlaylist();
+    this.store.addPlaylist(List.of(StoreTest.audioTrackMock));
+    final Optional<Track> track2Opt = this.store.shiftPlaylist();
+    assertEquals(true, trackOpt.isEmpty());
+    assertEquals(true, track2Opt.isPresent());
   }
 
   @Test
   @DisplayName("Test clearing queue")
-  fun testClearingQueue() {
-    Assertions.assertEquals(0, this.store!!.queueSize)
-    this.store!!.add(Optional.of(audioTrackMock))
-    Assertions.assertEquals(1, this.store!!.queueSize)
-    this.store!!.clear()
-    Assertions.assertEquals(0, this.store!!.queueSize)
+  void testClearingQueue() {
+    assertEquals(0, this.store.getQueueSize());
+    this.store.add(Optional.of(StoreTest.audioTrackMock));
+    assertEquals(1, this.store.getQueueSize());
+    this.store.clear();
+    assertEquals(0, this.store.getQueueSize());
   }
 
   @Test
   @DisplayName("Test clearing playlist queue")
-  fun testClearingPlaylistQueue() {
-    Assertions.assertEquals(0, this.store!!.playlistQueueSize)
-    this.store!!.addPlaylist(listOf(audioTrackMock))
-    Assertions.assertEquals(1, this.store!!.playlistQueueSize)
-    this.store!!.clearPlaylist()
-    Assertions.assertEquals(0, this.store!!.playlistQueueSize)
+  void testClearingPlaylistQueue() {
+    assertEquals(0, this.store.getPlaylistQueueSize());
+    this.store.addPlaylist(List.of(StoreTest.audioTrackMock));
+    assertEquals(1, this.store.getPlaylistQueueSize());
+    this.store.clearPlaylist();
+    assertEquals(0, this.store.getPlaylistQueueSize());
   }
 
   @Configuration
-  open class Config
-  companion object {
-    private val audioTrackMock: Track = Mockito.mock<Track>(Track::class.java)
-  }
+  public static class Config {}
 }
