@@ -1,236 +1,221 @@
-package com.lm_pakkanen.radio_pele_java.controllers;
+package com.lm_pakkanen.radio_pele_java.controllers
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import org.apache.hc.core5.http.ParseException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.jr.ob.JSON;
-import com.lm_pakkanen.radio_pele_java.Config;
-import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException;
-import se.michaelthelin.spotify.SpotifyApi;
-import se.michaelthelin.spotify.enums.ModelObjectType;
-import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
-import se.michaelthelin.spotify.model_objects.credentials.ClientCredentials;
-import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
-import se.michaelthelin.spotify.model_objects.specification.Paging;
-import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
-import se.michaelthelin.spotify.model_objects.specification.Track;
-import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
+import com.fasterxml.jackson.jr.ob.JSON
+import com.lm_pakkanen.radio_pele_java.Config
+import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException
+import org.apache.hc.core5.http.ParseException
+import org.springframework.context.annotation.Lazy
+import org.springframework.stereotype.Component
+import se.michaelthelin.spotify.SpotifyApi
+import se.michaelthelin.spotify.enums.ModelObjectType
+import se.michaelthelin.spotify.exceptions.SpotifyWebApiException
+import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified
+import se.michaelthelin.spotify.model_objects.specification.TrackSimplified
+import java.io.IOException
+import java.util.Timer
+import java.util.TimerTask
 
 @Component
 @Lazy
-public final class SpotifyController {
-  private final Config config;
-  private final SpotifyApi spotifyApi;
+class SpotifyController(
+  private val config: Config
+) {
 
-  /**
-   * Whether the Spotify API is authorised or not.
-   */
-  private boolean isUsable = true;
+  private val spotifyApi: SpotifyApi
+
+  /** Whether the Spotify API is usable or not. */
+  var isUsable: Boolean = true
+    private set
 
   /**
    * @param config instance.
    * @throws NullPointerException
    */
-  public SpotifyController(@Autowired Config config)
-      throws NullPointerException {
-
-    this.config = config;
-
-    final SpotifyApi.Builder spotifyApiBuilder = new SpotifyApi.Builder();
-
-    spotifyApiBuilder.setClientId(this.config.spotifyClientId);
-    spotifyApiBuilder.setClientSecret(this.config.spotifyClientSecret);
-
-    this.spotifyApi = spotifyApiBuilder.build();
-    this.refreshAccessToken();
+  init {
+    val spotifyApiBuilder = SpotifyApi.Builder()
+    spotifyApiBuilder.setClientId(this.config.spotifyClientId)
+    spotifyApiBuilder.setClientSecret(this.config.spotifyClientSecret)
+    this.spotifyApi = spotifyApiBuilder.build()
+    this.refreshAccessToken()
   }
 
   /**
-   * Resolves a url to a qualified track name (<artist> - <track name>)
-   * 
+   * Resolves a url to a qualified track name (<artist> - <track name></track>)
+   *
    * @param url to resolve.
-   * @return qaualified track name (<artist> - <track name>).
+   * @return qaualified track name (<artist> - <track name></track>).
    * @throws NullPointerException
    * @throws FailedToLoadSongException
-   */
-  public List<String> resolveQualifiedTrackNames(@Nullable String url)
-      throws FailedToLoadSongException {
+  </artist></artist> */
+  @Throws(FailedToLoadSongException::class)
+  fun resolveQualifiedTrackNames(url: String?): MutableList<String> {
 
     if (url == null || url.isEmpty()) {
-      throw new FailedToLoadSongException("URL is empty");
+      throw FailedToLoadSongException("URL is empty")
     }
 
-    final boolean isAlbum = url.contains("/album/");
-    final boolean isPlaylist = url.contains("/playlist/");
+    val isAlbum = url.contains("/album/")
+    val isPlaylist = url.contains("/playlist/")
 
-    final List<TrackSimplified> resolvedSimplifiedTracks = new ArrayList<>();
+    val resolvedSimplifiedTracks: MutableList<TrackSimplified> = ArrayList()
 
     try {
-      final String entityId = getEntityIdFromUrl(url);
+      val entityId = getEntityIdFromUrl(url)
 
       if (isAlbum) {
-        final Paging<TrackSimplified> albumSimplifiedTracks = this.spotifyApi
-            .getAlbumsTracks(entityId).limit(Config.PLAYLIST_MAX_SIZE).build()
-            .execute();
+        val albumSimplifiedTracks = this.spotifyApi
+          .getAlbumsTracks(entityId).limit(Config.PLAYLIST_MAX_SIZE).build()
+          .execute()
 
-        resolvedSimplifiedTracks
-            .addAll(List.of(albumSimplifiedTracks.getItems()));
-
+        resolvedSimplifiedTracks.addAll(albumSimplifiedTracks.getItems())
       } else if (isPlaylist) {
-        final PlaylistTrack[] playlistTrackItems = this.spotifyApi
-            .getPlaylistsItems(entityId).limit(Config.PLAYLIST_MAX_SIZE).build()
-            .execute().getItems();
 
-        for (int i = 0; i < playlistTrackItems.length; i++) {
-          final String playlistTrackItemString = JSON.std
-              .asString(playlistTrackItems[i].getTrack());
+        val playlistTrackItems = this.spotifyApi
+          .getPlaylistsItems(entityId)
+          .limit(Config.PLAYLIST_MAX_SIZE)
+          .build()
+          .execute()
+          .getItems()
 
-          resolvedSimplifiedTracks.add(new TrackSimplified.JsonUtil()
-              .createModelObject(playlistTrackItemString));
+        for (i: Int in playlistTrackItems.indices) {
+          val playlistTrackItemString = JSON.std
+            .asString(playlistTrackItems[i].track)
 
+          resolvedSimplifiedTracks.add(
+            TrackSimplified.JsonUtil()
+              .createModelObject(playlistTrackItemString)
+          )
         }
-
       } else {
-        final Track track = this.spotifyApi.getTrack(entityId).build()
-            .execute();
+        val track = this.spotifyApi.getTrack(entityId).build()
+          .execute()
 
-        final String trackAsString = JSON.std.asString(track);
+        val trackAsString = JSON.std.asString(track)
 
         resolvedSimplifiedTracks.add(
-            new TrackSimplified.JsonUtil().createModelObject(trackAsString));
+          TrackSimplified.JsonUtil().createModelObject(trackAsString)
+        )
       }
-    } catch (IOException | SpotifyWebApiException | ParseException exception) {
-      String exceptionMessage = exception.getMessage();
+    } catch (exception: Exception) {
+      when (exception) {
+        is IOException, is SpotifyWebApiException, is ParseException -> {
 
-      if (exceptionMessage == null) {
-        exceptionMessage = "Unknown exception occurred.";
+          var exceptionMessage = exception.message
+
+          if (exceptionMessage == null) {
+            exceptionMessage = "Unknown exception occurred."
+          }
+
+          throw FailedToLoadSongException(exceptionMessage)
+        }
+
+        else -> throw exception
       }
-
-      throw new FailedToLoadSongException(exceptionMessage);
     }
 
-    final List<String> qualifiedTrackNames = new ArrayList<>();
+    val qualifiedTrackNames: MutableList<String> = ArrayList()
 
-    for (TrackSimplified resolvedTrack : resolvedSimplifiedTracks) {
+    for (resolvedTrack in resolvedSimplifiedTracks) {
 
-      if (resolvedTrack == null) {
-        break;
-      }
+      val resolvedTrackArtists: List<ArtistSimplified> = listOf(*resolvedTrack.artists)
 
-      final List<ArtistSimplified> resolvedTrackArtists = List
-          .of(resolvedTrack.getArtists());
+      val artist = resolvedTrackArtists.stream()
+        .filter { n -> n.type == ModelObjectType.ARTIST }
+        .findFirst()
+        .orElse(resolvedTrackArtists.first())
 
-      final ArtistSimplified artist = resolvedTrackArtists.stream()
-          .filter(n -> n.getType().equals(ModelObjectType.ARTIST)).findFirst()
-          .orElse(resolvedTrackArtists.getFirst());
-
-      final StringBuilder qualifiedTrackNameBuilder = new StringBuilder();
+      val qualifiedTrackNameBuilder = StringBuilder()
 
       if (artist != null) {
-        qualifiedTrackNameBuilder.append(artist.getName());
-        qualifiedTrackNameBuilder.append(" - ");
+        qualifiedTrackNameBuilder.append(artist.name)
+        qualifiedTrackNameBuilder.append(" - ")
       }
 
-      qualifiedTrackNameBuilder.append(resolvedTrack.getName());
-
-      final String qualifiedTrackName = qualifiedTrackNameBuilder.toString();
-
-      if (qualifiedTrackName == null) {
-        continue;
-      }
-
-      qualifiedTrackNames.add(qualifiedTrackName);
-
+      qualifiedTrackNameBuilder.append(resolvedTrack.name)
+      qualifiedTrackNames.add(qualifiedTrackNameBuilder.toString())
     }
 
-    return qualifiedTrackNames;
-  }
-
-  /**
-   * @return boolean whether the Spotify API is usable or not.
-   */
-  public boolean getIsUsable() {
-    return this.isUsable;
+    return qualifiedTrackNames
   }
 
   /**
    * Gets entity ID from the given URL.
-   * 
+   *
    * @param url to get entity ID from.
    * @return entity ID.
    * @throws FailedToLoadSongException
    */
-  private String getEntityIdFromUrl(String url)
-      throws FailedToLoadSongException {
+  @Throws(FailedToLoadSongException::class)
+  private fun getEntityIdFromUrl(url: String): String {
 
-    final int entityIdStartIndex = url.lastIndexOf("/") + 1;
+    val entityIdStartIndex = url.lastIndexOf("/") + 1
 
-    int entityIdEndIndex = url.length();
+    var entityIdEndIndex = url.length
 
     if (url.contains("?")) {
-      entityIdEndIndex = url.indexOf("?");
+      entityIdEndIndex = url.indexOf("?")
     }
 
     if (entityIdEndIndex <= entityIdStartIndex) {
-      throw new FailedToLoadSongException("Failed to get entity ID from URL");
+      throw FailedToLoadSongException("Failed to get entity ID from URL")
     }
 
-    final String entityId = url.substring(entityIdStartIndex, entityIdEndIndex);
+    val entityId = url.substring(entityIdStartIndex, entityIdEndIndex)
 
-    if (entityId == null || entityId.isEmpty()) {
-      throw new FailedToLoadSongException("Failed to get entity ID from URL");
+    if (entityId.isEmpty()) {
+      throw FailedToLoadSongException("Failed to get entity ID from URL")
     }
 
-    return entityId;
+    return entityId
   }
 
   /**
    * Refreshes the access token and schedules the next refresh recursively.
    */
-  private void refreshAccessToken() {
+  private fun refreshAccessToken() {
     try {
-      final ClientCredentials clientCredentials = this.spotifyApi
-          .clientCredentials().build().execute();
+      val clientCredentials = this.spotifyApi
+        .clientCredentials().build().execute()
 
-      final String accessToken = clientCredentials.getAccessToken();
-      this.spotifyApi.setAccessToken(accessToken);
-      this.isUsable = true;
+      val accessToken = clientCredentials.accessToken
+      this.spotifyApi.accessToken = accessToken
+      this.isUsable = true
 
-      final int nextRefreshExpiresInSeconds = clientCredentials.getExpiresIn();
+      val nextRefreshExpiresInSeconds = clientCredentials.expiresIn
 
       /**
        * Time next access token refresh to happen 5 minutes before the current
        * token expires
        */
-      final int nextRefreshDelayInSeconds = nextRefreshExpiresInSeconds
-          - 5 * 60;
+      val nextRefreshDelayInSeconds = (nextRefreshExpiresInSeconds
+          - 5 * 60)
 
-      final int nextRefreshDelayInMilliseconds = nextRefreshDelayInSeconds
-          * 1000;
+      val nextRefreshDelayInMilliseconds = (nextRefreshDelayInSeconds
+          * 1000)
 
-      final Timer refreshAccessTokenTimer = new Timer();
+      val refreshAccessTokenTimer = Timer()
 
-      final TimerTask refreshAccessTokenTimerTask = new TimerTask() {
-        @Override
-        public void run() {
-          refreshAccessToken();
+      val refreshAccessTokenTimerTask: TimerTask = object : TimerTask() {
+        override fun run() {
+          refreshAccessToken()
         }
-      };
+      }
 
       // Schedule this method again.
-      refreshAccessTokenTimer.schedule(refreshAccessTokenTimerTask,
-          nextRefreshDelayInMilliseconds);
+      refreshAccessTokenTimer.schedule(
+        refreshAccessTokenTimerTask,
+        nextRefreshDelayInMilliseconds.toLong()
+      )
+    } catch (exception: Exception) {
+      when (exception) {
+        
+        is IOException, is SpotifyWebApiException, is ParseException -> {
+          exception.printStackTrace()
+          this.isUsable = false
+        }
 
-    } catch (IOException | SpotifyWebApiException | ParseException exception) {
-      exception.printStackTrace();
-      this.isUsable = false;
+        else -> throw exception
+      }
     }
   }
 }

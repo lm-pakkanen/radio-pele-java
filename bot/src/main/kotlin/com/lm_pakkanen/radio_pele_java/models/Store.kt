@@ -4,7 +4,6 @@ import com.lm_pakkanen.radio_pele_java.Config
 import dev.arbjerg.lavalink.client.player.Track
 import lombok.extern.log4j.Log4j2
 import org.springframework.stereotype.Component
-import java.util.List
 import java.util.Optional
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue

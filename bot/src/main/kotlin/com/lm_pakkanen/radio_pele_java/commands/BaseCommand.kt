@@ -1,28 +1,27 @@
-package com.lm_pakkanen.radio_pele_java.commands;
+package com.lm_pakkanen.radio_pele_java.commands
 
-import com.lm_pakkanen.radio_pele_java.models.exceptions.InvalidChannelException;
-import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import com.lm_pakkanen.radio_pele_java.models.exceptions.InvalidChannelException
+import net.dv8tion.jda.api.entities.channel.ChannelType
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.hooks.ListenerAdapter
 
-public abstract class BaseCommand extends ListenerAdapter {
+abstract class BaseCommand : ListenerAdapter() {
 
   /**
    * @param event which initiated the command.
    * @return the text channel where the command was initiated.
    * @throws InvalidChannelException
    */
-  public TextChannel getTextChan(SlashCommandInteractionEvent event)
-      throws InvalidChannelException {
+  @Throws(InvalidChannelException::class)
+  fun getTextChan(event: SlashCommandInteractionEvent): TextChannel {
 
-    final MessageChannelUnion messageChan = event.getChannel();
+    val messageChan = event.channel
 
-    if (!messageChan.getType().equals(ChannelType.TEXT)) {
-      throw new InvalidChannelException();
+    if (messageChan.type != ChannelType.TEXT) {
+      throw InvalidChannelException()
     }
 
-    return messageChan.asTextChannel();
+    return messageChan.asTextChannel()
   }
 }

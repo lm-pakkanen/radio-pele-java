@@ -1,88 +1,63 @@
-package com.lm_pakkanen.radio_pele_java.commands;
+package com.lm_pakkanen.radio_pele_java.commands
 
-import com.lm_pakkanen.radio_pele_java.controllers.MailMan;
-import com.lm_pakkanen.radio_pele_java.controllers.TrackScheduler;
-import com.lm_pakkanen.radio_pele_java.interfaces.ICommandListener;
-import com.lm_pakkanen.radio_pele_java.models.Store;
-import com.lm_pakkanen.radio_pele_java.models.exceptions.InvalidChannelException;
-import com.lm_pakkanen.radio_pele_java.models.message_embeds.CurrentSongEmbed;
-import com.lm_pakkanen.radio_pele_java.models.message_embeds.ExceptionEmbed;
-import com.lm_pakkanen.radio_pele_java.models.message_embeds.QueueEmptyEmbed;
-import com.lm_pakkanen.radio_pele_java.models.message_embeds.SongSkippedEmbed;
-import dev.arbjerg.lavalink.client.player.Track;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
+import com.lm_pakkanen.radio_pele_java.controllers.MailMan
+import com.lm_pakkanen.radio_pele_java.controllers.TrackScheduler
+import com.lm_pakkanen.radio_pele_java.interfaces.ICommandListener
+import com.lm_pakkanen.radio_pele_java.models.Store
+import com.lm_pakkanen.radio_pele_java.models.exceptions.InvalidChannelException
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.CurrentSongEmbed
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.ExceptionEmbed
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.QueueEmptyEmbed
+import com.lm_pakkanen.radio_pele_java.models.message_embeds.SongSkippedEmbed
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.commands.build.Commands
+import org.springframework.context.annotation.Lazy
+import org.springframework.stereotype.Component
+import java.util.Optional
 
-import java.util.Optional;
-
-@Component
 @Lazy
-public final class SkipCommand extends BaseCommand implements ICommandListener {
+@Component
+class SkipCommand(
+  private val store: Store,
+  private val trackScheduler: TrackScheduler
+) : BaseCommand(), ICommandListener {
 
-  private final @NonNull Store store;
-  private final @NonNull TrackScheduler trackScheduler;
+  override val commandName = "skip"
+  override val commandDescription = "Skip the current song."
+  override val commandData = Commands.slash(this.commandName, this.commandDescription)
 
-  public SkipCommand(@Autowired @NonNull Store store,
-                     @Autowired @NonNull TrackScheduler trackScheduler) {
-    super();
-    this.store = store;
-    this.trackScheduler = trackScheduler;
-  }
-
-  @Override
-  public String getCommandName() {
-    return "skip";
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Skip the current song.";
-  }
-
-  @Override
-  public SlashCommandData getCommandData() {
-    return Commands.slash(this.getCommandName(), this.getCommandDescription());
-  }
-
-  /**
-   * Skips the current song.
-   *
-   * @throws NullPointerException
-   */
-  @Override
-  public void onSlashCommandInteraction(SlashCommandInteractionEvent event)
-      throws NullPointerException {
-    if (!event.getName().equals(getCommandName())) {
-      return;
+  /** Skips the current song. */
+  override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+    if (event.name != commandName) {
+      return
     }
 
     try {
+      check(trackScheduler.isPlaying) { "No song to skip!" }
 
-      if (!trackScheduler.isPlaying()) {
-        throw new IllegalStateException("No song to skip!");
+      val textChan = super.getTextChan(event)
+      val nextTrackOpt = this.trackScheduler
+        .skipCurrentSong()
+
+      MailMan.replyInteraction(event, SongSkippedEmbed().embed)
+
+      nextTrackOpt.ifPresentOrElse({ nextTrack ->
+        MailMan.send(
+          Optional.of(textChan),
+          CurrentSongEmbed(nextTrack, store).embed
+        )
+      }, {
+        MailMan.send(Optional.of(textChan), QueueEmptyEmbed().embed)
+      })
+    } catch (ex: Exception) {
+      when (ex) {
+
+        is InvalidChannelException, is IllegalStateException -> {
+          MailMan.replyInteraction(event, ExceptionEmbed(ex).embed)
+        }
+
+        else -> throw ex
       }
-
-      final TextChannel textChan = super.getTextChan(event);
-      final Optional<Track> nextTrackOpt = this.trackScheduler
-          .skipCurrentSong();
-
-      MailMan.replyInteraction(event, new SongSkippedEmbed().getEmbed());
-
-      if (nextTrackOpt.isEmpty()) {
-        MailMan.send(Optional.of(textChan), new QueueEmptyEmbed().getEmbed());
-      } else {
-        MailMan.send(Optional.of(textChan),
-            new CurrentSongEmbed(nextTrackOpt.get(), store).getEmbed());
-      }
-
-    } catch (InvalidChannelException | IllegalStateException exception) {
-      MailMan.replyInteraction(event, new ExceptionEmbed(exception).getEmbed());
     }
   }
 }

@@ -1,64 +1,51 @@
-package com.lm_pakkanen.radio_pele_java.controllers.listeners;
+package com.lm_pakkanen.radio_pele_java.controllers.listeners
 
-import java.util.List;
-import org.springframework.stereotype.Component;
-import com.lm_pakkanen.radio_pele_java.controllers.TrackScheduler;
-import com.lm_pakkanen.radio_pele_java.interfaces.IEventListener;
-import lombok.RequiredArgsConstructor;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
-import net.dv8tion.jda.api.events.GenericEvent;
-import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
-import net.dv8tion.jda.api.managers.AudioManager;
+import com.lm_pakkanen.radio_pele_java.controllers.TrackScheduler
+import com.lm_pakkanen.radio_pele_java.interfaces.IEventListener
+import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel
+import net.dv8tion.jda.api.events.GenericEvent
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent
+import org.springframework.stereotype.Component
 
 @Component
-@RequiredArgsConstructor
-public class ChannelUpdateListener implements IEventListener {
-
-  private final TrackScheduler trackScheduler;
+class ChannelUpdateListener(
+  private val trackScheduler: TrackScheduler
+) : IEventListener {
 
   /**
    * Listens to GuildVoiceUpdateEvents and leaves the voice channel if only bots
    * are left in the bot's connected voice channel.
    */
-  @Override
-  public void onEvent(GenericEvent event) {
+  override fun onEvent(event: GenericEvent) {
 
-    if (!(event instanceof GuildVoiceUpdateEvent)) {
+    if (event !is GuildVoiceUpdateEvent) {
       // Don't care
-      return;
+      return
     }
 
-    final GuildVoiceUpdateEvent guildVoiceUpdateEvent = (GuildVoiceUpdateEvent) event;
-    final AudioChannelUnion chanUserLeftFrom = guildVoiceUpdateEvent
-        .getChannelLeft();
-
-    final AudioManager audioManager = guildVoiceUpdateEvent.getGuild()
-        .getAudioManager();
-
-    final AudioChannelUnion connectedAudioChan = audioManager
-        .getConnectedChannel();
+    val chanUserLeftFrom: AudioChannel? = event.channelJoined
+    val audioManager = event.getGuild().audioManager
+    val connectedAudioChan: AudioChannel? = audioManager.connectedChannel
 
     if (chanUserLeftFrom == null || connectedAudioChan == null) {
       // Don't care
-      return;
+      return
     }
 
-    if (!chanUserLeftFrom.getId().equals(connectedAudioChan.getId())) {
+    if (chanUserLeftFrom.id != connectedAudioChan.id) {
       // Don't care
-      return;
+      return
     }
 
-    final List<Member> membersInChan = connectedAudioChan.getMembers();
+    val membersInChan = connectedAudioChan.members
 
-    final boolean isAllBotsInChan = membersInChan.stream()
-        .allMatch(member -> member.getUser().isBot());
+    val isAllBotsInChan = membersInChan.stream().allMatch { member -> member.user.isBot }
 
     if (isAllBotsInChan) {
       // Clear queue and leave channel if only bots left in the channel
-      trackScheduler.destroy();
-      audioManager.closeAudioConnection();
-      audioManager.setSendingHandler(null);
+      trackScheduler.destroy()
+      audioManager.closeAudioConnection()
+      audioManager.sendingHandler = null
     }
   }
 }

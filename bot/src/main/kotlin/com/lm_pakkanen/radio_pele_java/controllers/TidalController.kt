@@ -1,216 +1,207 @@
-package com.lm_pakkanen.radio_pele_java.controllers;
+package com.lm_pakkanen.radio_pele_java.controllers
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
-import com.lm_pakkanen.radio_pele_java.Config;
-import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException;
-import io.github.lm_pakkanen.tidal_api.TidalApi;
-import io.github.lm_pakkanen.tidal_api.models.CredentialsStore;
-import io.github.lm_pakkanen.tidal_api.models.entities.TidalCredentials;
-import io.github.lm_pakkanen.tidal_api.models.entities.TidalSimpleArtist;
-import io.github.lm_pakkanen.tidal_api.models.entities.TidalTrack;
-import io.github.lm_pakkanen.tidal_api.models.exceptions.InvalidCredentialsException;
-import io.github.lm_pakkanen.tidal_api.models.exceptions.QueryException;
-import io.github.lm_pakkanen.tidal_api.models.exceptions.UnauthorizedException;
+import com.lm_pakkanen.radio_pele_java.Config
+import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException
+import io.github.lm_pakkanen.tidal_api.TidalApi
+import io.github.lm_pakkanen.tidal_api.models.CredentialsStore
+import io.github.lm_pakkanen.tidal_api.models.entities.TidalTrack
+import io.github.lm_pakkanen.tidal_api.models.exceptions.InvalidCredentialsException
+import io.github.lm_pakkanen.tidal_api.models.exceptions.QueryException
+import io.github.lm_pakkanen.tidal_api.models.exceptions.UnauthorizedException
+import org.springframework.stereotype.Component
+import java.util.Timer
+import java.util.TimerTask
 
 @Component
-public class TidalController {
+class TidalController(
+  private val config: Config
+) {
 
-  private final @NonNull Config config;
-  private final @NonNull TidalApi tidalApi;
+  private val tidalApi: TidalApi = TidalApi()
 
+  /**
+   * @return boolean whether the Tidal API is usable or not.
+   */
   /**
    * Whether the Tidal API is authorised or not.
    */
-  private boolean isUsable = true;
+  var isUsable: Boolean = true
+    private set
 
   /**
    * @param config instance.
-   * @throws NullPointerException if the Tidal API instance cannot be created.
    */
-  public TidalController(@Autowired @NonNull Config config) {
-
-    this.config = config;
-    this.tidalApi = new TidalApi();
-
-    refreshAccessToken();
+  init {
+    refreshAccessToken()
   }
 
-  public @NonNull String[] resolveQualifiedTrackNames(@Nullable String url)
-      throws FailedToLoadSongException {
+  @Throws(FailedToLoadSongException::class)
+  fun resolveQualifiedTrackNames(url: String?): Array<String> {
 
     if (url == null || url.isEmpty()) {
-      throw new FailedToLoadSongException("URL is empty");
+      throw FailedToLoadSongException("URL is empty")
     }
 
-    final boolean isArtist = url.contains("/artist/");
-    final boolean isAlbum = url.contains("/album/");
-    final boolean isMix = url.contains("/mix/");
-    final boolean isPlaylist = url.contains("/playlist/");
-    final boolean isVideo = url.contains("/video/");
+    val isArtist = url.contains("/artist/")
+    val isAlbum = url.contains("/album/")
+    val isMix = url.contains("/mix/")
+    val isPlaylist = url.contains("/playlist/")
+    val isVideo = url.contains("/video/")
 
-    final boolean resolveAsPlaylist = isArtist || isAlbum || isPlaylist;
+    val resolveAsPlaylist = isArtist || isAlbum || isPlaylist
 
-    final int capacity = resolveAsPlaylist ? Config.PLAYLIST_MAX_SIZE : 1;
+    val capacity = if (resolveAsPlaylist) Config.PLAYLIST_MAX_SIZE else 1
+    val entityId = getEntityIdFromUrl(url)
 
-    final String entityId = getEntityIdFromUrl(url);
+    val resolvedTracks = getResolvedTracks(
+      entityId,
+      isArtist,
+      isAlbum,
+      isMix,
+      isPlaylist,
+      isVideo
+    )
 
-    final TidalTrack[] resolvedTracks = getResolvedTracks(entityId, isArtist,
-        isAlbum, isMix, isPlaylist, isVideo);
+    val qualifiedTrackNames: MutableList<String> = ArrayList(capacity)
 
-    final String[] qualifiedTrackNames = new String[capacity];
+    for (i in resolvedTracks.indices) {
 
-    for (int i = 0; i < resolvedTracks.length; i++) {
-      final TidalTrack resolvedTrack = resolvedTracks[i];
+      val resolvedTrack = resolvedTracks[i] ?: break
+      val resolvedTrackArtists = listOf(*resolvedTrack.artists)
 
-      if (resolvedTrack == null) {
-        break;
-      }
+      val artist = resolvedTrackArtists
+        .stream()
+        .filter { n -> n.isMainArtist }
+        .findFirst()
+        .orElse(resolvedTrackArtists[0])
 
-      final List<TidalSimpleArtist> resolvedTrackArtists = Arrays
-          .asList(resolvedTrack.getArtists());
-
-      final TidalSimpleArtist artist = resolvedTrackArtists.stream()
-          .filter(n -> n.isMainArtist).findFirst()
-          .orElse(resolvedTrackArtists.get(0));
-
-      final StringBuilder qualifiedTrackNameBuilder = new StringBuilder();
+      val qualifiedTrackNameBuilder = StringBuilder()
 
       if (artist != null) {
-        qualifiedTrackNameBuilder.append(artist.name);
-        qualifiedTrackNameBuilder.append(" - ");
+        qualifiedTrackNameBuilder.append(artist.name)
+        qualifiedTrackNameBuilder.append(" - ")
       }
 
-      qualifiedTrackNameBuilder.append(resolvedTrack.getTitle());
+      qualifiedTrackNameBuilder.append(resolvedTrack.title)
 
-      final String qualifiedTrackName = qualifiedTrackNameBuilder.toString();
-
-      if (qualifiedTrackName == null) {
-        continue;
-      }
-
-      qualifiedTrackNames[i] = qualifiedTrackName;
+      val qualifiedTrackName = qualifiedTrackNameBuilder.toString()
+      qualifiedTrackNames[i] = qualifiedTrackName
     }
 
-    return qualifiedTrackNames;
+    return qualifiedTrackNames.toTypedArray()
   }
 
-  private @NonNull TidalTrack[] getResolvedTracks(@NonNull String entityId,
-      boolean isArtist, boolean isAlbum, boolean isMix, boolean isPlaylist,
-      boolean isVideo) throws FailedToLoadSongException {
+  @Throws(FailedToLoadSongException::class)
+  private fun getResolvedTracks(
+    entityId: String,
+    isArtist: Boolean,
+    isAlbum: Boolean,
+    isMix: Boolean,
+    isPlaylist: Boolean,
+    isVideo: Boolean
+  ): Array<TidalTrack?> {
 
     if (isAlbum) {
-      throw new FailedToLoadSongException("Albums not supported yet");
+      throw UnsupportedOperationException("Albums not supported yet")
     }
 
     if (isMix) {
-      throw new FailedToLoadSongException("Mixes not supported yet");
+      throw UnsupportedOperationException("Mixes not supported yet")
     }
 
     if (isPlaylist) {
-      throw new FailedToLoadSongException("Playlists not supported yet");
+      throw UnsupportedOperationException("Playlists not supported yet")
     }
 
     if (isVideo) {
-      throw new FailedToLoadSongException("Videos not supported yet");
+      throw UnsupportedOperationException("Videos not supported yet")
     }
 
     try {
 
       if (isArtist) {
-        return this.tidalApi.tracks.listByArtist(entityId, "FI",
-            Config.PLAYLIST_MAX_SIZE);
+        return this.tidalApi.tracks.listByArtist(
+          entityId, "FI",
+          Config.PLAYLIST_MAX_SIZE
+        )
       }
 
-      return new TidalTrack[] {
-          this.tidalApi.tracks.get(entityId, "FI")
-      };
-    } catch (QueryException exception) {
-      throw new FailedToLoadSongException(exception.getMessage());
+      return arrayOf(
+        this.tidalApi.tracks.get(entityId, "FI")
+      )
+    } catch (exception: QueryException) {
+      throw FailedToLoadSongException(exception.message!!)
     }
   }
 
   /**
    * Gets entity ID from the given URL.
-   * 
+   *
    * @param url to get entity ID from.
    * @return entity ID.
    * @throws FailedToLoadSongException
    */
-  private @NonNull String getEntityIdFromUrl(@NonNull String url)
-      throws FailedToLoadSongException {
+  @Throws(FailedToLoadSongException::class)
+  private fun getEntityIdFromUrl(url: String): String {
+    val entityIdStartIndex = url.lastIndexOf("/") + 1
 
-    final int entityIdStartIndex = url.lastIndexOf("/") + 1;
-
-    int entityIdEndIndex = url.length();
+    var entityIdEndIndex = url.length
 
     if (url.contains("?")) {
-      entityIdEndIndex = url.indexOf("?");
+      entityIdEndIndex = url.indexOf("?")
     }
 
     if (entityIdEndIndex <= entityIdStartIndex) {
-      throw new FailedToLoadSongException("Failed to get entity ID from URL");
+      throw FailedToLoadSongException("Failed to get entity ID from URL")
     }
 
-    final String entityId = url.substring(entityIdStartIndex, entityIdEndIndex);
+    val entityId = url.substring(entityIdStartIndex, entityIdEndIndex)
 
-    if (entityId == null || entityId.isEmpty()) {
-      throw new FailedToLoadSongException("Failed to get entity ID from URL");
+    if (entityId.isEmpty()) {
+      throw FailedToLoadSongException("Failed to get entity ID from URL")
     }
 
-    return entityId;
-  }
-
-  /**
-   * @return boolean whether the Tidal API is usable or not.
-   */
-  public boolean getIsUsable() {
-    return this.isUsable;
+    return entityId
   }
 
   /**
    * Refreshes the access token and schedules the next refresh recursively.
    */
-  private void refreshAccessToken() {
-    final String tidalClientId = this.config.tidalClientId;
-    final String tidalClientSecret = this.config.tidalClientSecret;
+  private fun refreshAccessToken() {
+
+    val tidalClientId = this.config.tidalClientId
+    val tidalClientSecret = this.config.tidalClientSecret
 
     try {
-      this.tidalApi.authorize(tidalClientId, tidalClientSecret);
-      this.isUsable = true;
-    } catch (InvalidCredentialsException | UnauthorizedException exception) {
-      this.isUsable = false;
-      return;
+      this.tidalApi.authorize(tidalClientId, tidalClientSecret)
+      this.isUsable = true
+    } catch (_: InvalidCredentialsException) {
+      this.isUsable = false
+      return
+    } catch (_: UnauthorizedException) {
+      this.isUsable = false
+      return
     }
 
-    final TidalCredentials credentials = CredentialsStore.getInstance()
-        .getCredentials();
-
-    final long nextRefreshExpiresInSeconds = credentials.getExpiresInSeconds();
+    val credentials = CredentialsStore.getInstance().credentials
+    val nextRefreshExpiresInSeconds = credentials.getExpiresInSeconds()
 
     /**
      * Time next access token refresh to happen 5 minutes before the current
      * token expires
      */
-    final long nextRefreshDelayInSeconds = nextRefreshExpiresInSeconds - 5 * 60;
+    val nextRefreshDelayInSeconds: Long = nextRefreshExpiresInSeconds - 5 * 60
 
-    final long nextRefreshDelayInMs = nextRefreshDelayInSeconds * 1000;
-    final Timer refreshAccessTokenTimer = new Timer();
+    val nextRefreshDelayInMs: Long = nextRefreshDelayInSeconds * 1000
+    val refreshAccessTokenTimer = Timer()
 
-    final TimerTask refreshTokenTask = new TimerTask() {
-      @Override
-      public void run() {
-        refreshAccessToken();
+    val refreshTokenTask: TimerTask = object : TimerTask() {
+      override fun run() {
+        refreshAccessToken()
       }
-    };
+    }
 
     // Schedule this method again.
-    refreshAccessTokenTimer.schedule(refreshTokenTask, nextRefreshDelayInMs);
+    refreshAccessTokenTimer.schedule(refreshTokenTask, nextRefreshDelayInMs)
   }
 }

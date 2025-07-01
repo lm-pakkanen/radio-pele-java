@@ -1,24 +1,21 @@
-package com.lm_pakkanen.radio_pele_java.controllers;
+package com.lm_pakkanen.radio_pele_java.controllers
 
-import com.lm_pakkanen.radio_pele_java.Config;
-import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException;
-import com.lm_pakkanen.radio_pele_java.util.LavaLinkUtil;
-import dev.arbjerg.lavalink.client.player.LavalinkLoadResult;
-import dev.arbjerg.lavalink.client.player.Track;
-import lombok.RequiredArgsConstructor;
-import org.springframework.util.Assert;
+import com.lm_pakkanen.radio_pele_java.Config
+import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongException
+import com.lm_pakkanen.radio_pele_java.util.LavaLinkUtil.Companion.getLink
+import dev.arbjerg.lavalink.client.player.LavalinkLoadResult
+import dev.arbjerg.lavalink.client.player.Track
+import org.springframework.util.Assert
+import java.net.URI
+import java.net.URISyntaxException
+import java.util.Optional
+import java.util.function.Consumer
+import java.util.function.Supplier
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-@RequiredArgsConstructor
-public final class TrackResolver {
-
-  private final TidalController tidalController;
-  private final SpotifyController spotifyController;
+class TrackResolver(
+  private val tidalController: TidalController,
+  private val spotifyController: SpotifyController
+) {
 
   /**
    * Try to resolve a song from a given URL. If the track can't be found, throws
@@ -31,65 +28,72 @@ public final class TrackResolver {
    * @return resolved tracks.
    * @throws FailedToLoadSongException when song(s) cannot be resolved
    */
-  public List<Track> resolve(long guildId, String url, boolean asPlaylist)
-      throws FailedToLoadSongException {
+  @Throws(FailedToLoadSongException::class)
+  fun resolve(guildId: Long, url: String, asPlaylist: Boolean): List<Track> {
 
-    final int capacity = asPlaylist ? Config.PLAYLIST_MAX_SIZE : 1;
-    final List<String> finalUrls = new ArrayList<>(capacity);
+    var asPlaylist = asPlaylist
+    val capacity = if (asPlaylist) Config.PLAYLIST_MAX_SIZE else 1
+    val finalUrls: MutableList<String> = ArrayList(capacity)
 
-    URI uri = null;
+    var uri: URI
 
     try {
-      uri = new URI(url);
-      Assert.notNull(uri.getHost(), "URI host is null");
-    } catch (URISyntaxException | IllegalArgumentException _) {
-      throw new FailedToLoadSongException("Invalid URL.");
-    }
+      uri = URI(url)
+      Assert.notNull(uri.host, "URI host is null")
+    } catch (ex: Exception) {
+      when (ex) {
 
-    final String uriDomain = uri.getHost();
+        is URISyntaxException, is IllegalArgumentException -> {
+          throw FailedToLoadSongException("Invalid URL.")
+        }
 
-    if (uriDomain.contains("spotify")) {
-      final List<String> qualifiedTrackNames = this.spotifyController
-          .resolveQualifiedTrackNames(url);
-
-      qualifiedTrackNames.stream().map(n -> "ytsearch:" + n)
-          .forEach(finalUrls::add);
-
-      asPlaylist = false;
-    } else if (uriDomain.contains("tidal")) {
-      final String[] qualifiedTrackNames = this.tidalController
-          .resolveQualifiedTrackNames(url);
-
-      for (int i = 0; i < qualifiedTrackNames.length; i++) {
-        finalUrls.add("ytsearch:" + qualifiedTrackNames[i]);
+        else -> throw ex
       }
 
-      asPlaylist = false;
+    }
+
+    val uriDomain = uri.host
+
+    if (uriDomain.contains("spotify")) {
+      val qualifiedTrackNames = this.spotifyController!!
+        .resolveQualifiedTrackNames(url)
+
+      qualifiedTrackNames.stream().map { n -> "ytsearch:$n" }.forEach { n -> finalUrls.add(n) }
+      asPlaylist = false
+    } else if (uriDomain.contains("tidal")) {
+      val qualifiedTrackNames = this.tidalController!!
+        .resolveQualifiedTrackNames(url)
+
+      for (qualifiedTrackName in qualifiedTrackNames) {
+        finalUrls.add("ytsearch:$qualifiedTrackName")
+      }
+
+      asPlaylist = false
     } else {
-      finalUrls.add(url);
+      finalUrls.add(url)
     }
 
     if (finalUrls.isEmpty()) {
-      throw new FailedToLoadSongException("Not found.");
+      throw FailedToLoadSongException("Not found.")
     }
 
-    final AudioLoader audioLoader = new AudioLoader(asPlaylist);
+    val audioLoader = AudioLoader(asPlaylist)
 
-    finalUrls.stream().forEach(finalUrl -> {
+    finalUrls.forEach(Consumer { finalUrl: String? ->
+      val loadResult = Optional.ofNullable<LavalinkLoadResult>(
+        getLink(guildId).loadItem(finalUrl!!).block()
+      ).orElseThrow(
+        Supplier { IllegalArgumentException("Could not load result for '$finalUrl'") }
+      )
+      audioLoader.accept(loadResult)
+    })
 
-      final LavalinkLoadResult loadResult = Optional.ofNullable(
-          LavaLinkUtil.Companion.getLink(guildId).loadItem(finalUrl).block()
-      ).orElseThrow(() -> new IllegalArgumentException("Could not load result for '%s'".formatted(finalUrl)));
-
-      audioLoader.accept(loadResult);
-    });
-
-    final List<Track> resolvedTracks = audioLoader.getResolvedTracks();
+    val resolvedTracks: MutableList<Track> = audioLoader.resolvedTracks
 
     if (resolvedTracks.isEmpty()) {
-      throw new FailedToLoadSongException("No tracks were resolved.");
+      throw FailedToLoadSongException("No tracks were resolved.")
     }
 
-    return resolvedTracks;
+    return resolvedTracks
   }
 }
