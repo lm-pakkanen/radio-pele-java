@@ -5,6 +5,8 @@ import com.lm_pakkanen.radio_pele_java.models.exceptions.FailedToLoadSongExcepti
 import com.lm_pakkanen.radio_pele_java.models.message_embeds.CurrentSongEmbed
 import com.lm_pakkanen.radio_pele_java.models.message_embeds.QueueEmptyEmbed
 import com.lm_pakkanen.radio_pele_java.util.LavaLinkUtil.Companion.getPlayer
+import dev.arbjerg.lavalink.client.LavalinkClient
+import dev.arbjerg.lavalink.client.event.TrackEndEvent
 import dev.arbjerg.lavalink.client.player.Track
 import dev.arbjerg.lavalink.protocol.v4.Message.EmittedEvent.TrackEndEvent.AudioTrackEndReason
 import lombok.extern.log4j.Log4j2
@@ -16,10 +18,16 @@ import java.util.function.Consumer
 @Log4j2
 @Component
 class TrackScheduler(
+  private val lavalinkClient: LavalinkClient,
   private val store: Store,
   private val tidalController: TidalController,
   private val spotifyController: SpotifyController
 ) {
+
+  init {
+    lavalinkClient.on(TrackEndEvent::class.java)
+      .subscribe({ event -> onTrackEnd(event.endReason) })
+  }
 
   companion object {
     private val PLAYLIST_URI_MATCHERS: List<String> = listOf("/playlist/", "/album/", "?list=", "&list=")
