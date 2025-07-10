@@ -1,10 +1,12 @@
 package com.lm_pakkanen.radio_pele_java
 
 import com.lm_pakkanen.radio_pele_java.commands.CommandBuilder
+import com.lm_pakkanen.radio_pele_java.controllers.TrackScheduler
 import com.lm_pakkanen.radio_pele_java.interfaces.ICommandListener
 import com.lm_pakkanen.radio_pele_java.interfaces.IEventListener
 import dev.arbjerg.lavalink.client.LavalinkClient
 import dev.arbjerg.lavalink.client.NodeOptions
+import dev.arbjerg.lavalink.client.event.TrackEndEvent
 import dev.arbjerg.lavalink.client.getUserIdFromToken
 import dev.arbjerg.lavalink.libraries.jda.JDAVoiceUpdateListener
 import lombok.extern.log4j.Log4j2
@@ -26,7 +28,9 @@ import org.springframework.util.Assert
   basePackages = ["com.lm_pakkanen.radio_pele_java.controllers", "com.lm_pakkanen.radio_pele_java.models"
   ]
 )
-open class Config {
+open class Config(
+  private val trackScheduler: TrackScheduler
+) {
 
   companion object {
     const val PLAYLIST_MAX_SIZE: Int = 100
@@ -73,6 +77,9 @@ open class Config {
 
     client.addNode(primaryNodeOptions)
     // TODO handle node connection errors.
+
+    client.on(TrackEndEvent::class.java)
+      .subscribe({ event -> trackScheduler.onTrackEnd(event.endReason) })
 
     return client
   }
@@ -123,7 +130,6 @@ open class Config {
         .slashCommands
 
       client.updateCommands().addCommands(*generatedSlashCommands).queue()
-
     }
 
     return client
