@@ -1,5 +1,6 @@
 spring:
-  application: name:radio-pele
+  application:
+    name: radio-pele
   profiles:
     active: prod
   jmx:

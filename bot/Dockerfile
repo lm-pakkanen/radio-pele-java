@@ -12,7 +12,7 @@ FROM eclipse-temurin:${JAVA_VERSION}-jre-alpine AS jdk
 
 WORKDIR /radio-pele
 
-COPY --from=maven ./target/radio_pele_java-0.0.1-SNAPSHOT.jar ./radio_pele.jar
+COPY --from=maven ./target/radio-pele-java-bot-0.0.1-SNAPSHOT.jar ./radio_pele.jar
 COPY ./entrypoint.sh ./entrypoint.sh
 
 ENTRYPOINT ["sh", "entrypoint.sh"]
