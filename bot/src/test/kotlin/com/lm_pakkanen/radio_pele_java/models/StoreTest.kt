@@ -7,7 +7,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
-import java.util.List
 import java.util.Optional
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -79,7 +78,7 @@ internal class StoreTest {
   @DisplayName("Test shift playlist")
   fun testShiftPlaylist() {
     val trackOpt: Optional<Track> = this.store.shiftPlaylist()
-    this.store.addPlaylist(List.of<Track>(audioTrackMock))
+    this.store.addPlaylist(listOf(audioTrackMock))
     val track2Opt: Optional<Track> = this.store.shiftPlaylist()
     Assertions.assertEquals(true, trackOpt.isEmpty)
     Assertions.assertEquals(true, track2Opt.isPresent)

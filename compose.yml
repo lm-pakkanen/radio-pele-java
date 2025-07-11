@@ -1,5 +1,6 @@
 services:
   lavalink:
+    # noinspection SpellCheckingInspection,SpellCheckingInspection
     image: ghcr.io/lavalink-devs/lavalink:4-distroless
     container_name: radio_pele_lavalink
     restart: unless-stopped
@@ -15,7 +16,7 @@ services:
       - lavalink
     expose:
       - 2333
-    #healthcheck:
+      #healthcheck:
       #test: ["CMD", "curl", "-f", "http://localhost:2333/metrics"]
       #start_period: 10s
       #interval: 10s

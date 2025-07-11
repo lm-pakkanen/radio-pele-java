@@ -1,11 +1,12 @@
 # Radio Pele
 
-This repository contains the source code for a Discord music bot which supports playing audio from multiple different streaming sources.
+This repository contains the source code for a Discord music bot which supports playing audio from multiple different
+streaming sources.
 This bot was originally written with TypeScript -- this is a complete rewrite of it using Java / Spring Boot.
 
 # Playing songs
 
-Songs can be played from most streaming sources or via direct links to video- or audiofiles.
+Songs can be played from most streaming sources or via direct links to video- or audio files.
 Spotify links are supported such that the song is searched and played from YouTube.
 
 # Playing playlists

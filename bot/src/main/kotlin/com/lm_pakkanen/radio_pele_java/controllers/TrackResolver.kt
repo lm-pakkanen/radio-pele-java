@@ -55,14 +55,12 @@ class TrackResolver(
     val uriDomain = uri.host
 
     if (uriDomain.contains("spotify")) {
-      val qualifiedTrackNames = this.spotifyController!!
-        .resolveQualifiedTrackNames(url)
+      val qualifiedTrackNames = this.spotifyController.resolveQualifiedTrackNames(url)
 
       qualifiedTrackNames.stream().map { n -> "ytsearch:$n" }.forEach { n -> finalUrls.add(n) }
       asPlaylist = false
     } else if (uriDomain.contains("tidal")) {
-      val qualifiedTrackNames = this.tidalController!!
-        .resolveQualifiedTrackNames(url)
+      val qualifiedTrackNames = this.tidalController.resolveQualifiedTrackNames(url)
 
       for (qualifiedTrackName in qualifiedTrackNames) {
         finalUrls.add("ytsearch:$qualifiedTrackName")

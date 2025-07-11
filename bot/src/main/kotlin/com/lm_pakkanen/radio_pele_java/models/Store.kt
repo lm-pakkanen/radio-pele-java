@@ -23,7 +23,7 @@ class Store {
    */
   fun add(trackOpt: Optional<Track>): Boolean {
     var wasPresent = false
-    trackOpt.ifPresent({ track -> wasPresent = this.queue.offer(track) })
+    trackOpt.ifPresent { track -> wasPresent = this.queue.offer(track) }
     return wasPresent
   }
 
@@ -82,26 +82,18 @@ class Store {
    * Shuffles the queue.
    */
   fun shuffle() {
+
+    if (this.hasPlaylist()) {
+      shufflePlaylist()
+      return
+    }
+
     val shuffledTracks: MutableList<Track> = ArrayList(this.queue)
     shuffledTracks.shuffle()
     this.queue.clear()
     this.queue.addAll(shuffledTracks)
   }
 
-  /**
-   * Shuffles the playlist queue.
-   */
-  fun shufflePlaylist() {
-
-    if (!this.hasPlaylist()) {
-      return
-    }
-
-    val shuffledUrls: MutableList<Track> = ArrayList(this.playListQueue)
-    shuffledUrls.shuffle()
-    this.playListQueue.clear()
-    this.playListQueue.addAll(shuffledUrls)
-  }
 
   fun getQueueSize(): Int {
     return this.queue.size
@@ -113,5 +105,16 @@ class Store {
 
   fun hasPlaylist(): Boolean {
     return !this.playListQueue.isEmpty()
+  }
+
+  /**
+   * Shuffles the playlist queue.
+   */
+  private fun shufflePlaylist() {
+
+    val shuffledUrls: MutableList<Track> = ArrayList(this.playListQueue)
+    shuffledUrls.shuffle()
+    this.playListQueue.clear()
+    this.playListQueue.addAll(shuffledUrls)
   }
 }

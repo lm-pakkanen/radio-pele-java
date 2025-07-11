@@ -1,12 +1,10 @@
 package com.lm_pakkanen.radio_pele_java.controllers
 
-import lombok.extern.log4j.Log4j2
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import java.util.Optional
 
-@Log4j2
 class MailMan {
 
   companion object {
@@ -37,7 +35,7 @@ class MailMan {
       textChanOpt: Optional<TextChannel>,
       embed: MessageEmbed
     ) {
-      
+
       if (textChanOpt.isEmpty) {
         return
       }

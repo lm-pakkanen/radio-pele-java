@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.utils.cache.CacheFlag
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
@@ -74,7 +73,7 @@ open class Config(
 
     client.addNode(primaryNodeOptions)
     // TODO handle node connection errors.
-    
+
     return client
   }
 
@@ -87,9 +86,9 @@ open class Config(
    */
   @Bean
   open fun getJDAInstance(
-    @Autowired lavalinkClient: LavalinkClient,
-    @Autowired commands: Array<ICommandListener>,
-    @Autowired eventListeners: Array<IEventListener>
+    lavalinkClient: LavalinkClient,
+    commands: Array<ICommandListener>,
+    eventListeners: Array<IEventListener>
   ): JDA {
 
     Assert.isTrue(commands.isNotEmpty(), "Commands cannot be empty.")

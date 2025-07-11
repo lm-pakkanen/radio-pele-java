@@ -43,7 +43,7 @@ class SpotifyController(
    * Resolves a url to a qualified track name (<artist> - <track name></track>)
    *
    * @param url to resolve.
-   * @return qaualified track name (<artist> - <track name></track>).
+   * @return qualified track name (<artist> - <track name></track>).
    * @throws NullPointerException
    * @throws FailedToLoadSongException
   </artist></artist> */
@@ -208,7 +208,7 @@ class SpotifyController(
       )
     } catch (exception: Exception) {
       when (exception) {
-        
+
         is IOException, is SpotifyWebApiException, is ParseException -> {
           exception.printStackTrace()
           this.isUsable = false

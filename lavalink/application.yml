@@ -5,6 +5,7 @@ lavalink:
   server:
     sources:
       youtube: false
+      # noinspection SpellCheckingInspection
       bandcamp: false
       soundcloud: true
       twitch: true
@@ -32,6 +33,7 @@ plugins:
     allowSearch: true
     allowDirectVideoIds: true
     allowDirectPlaylistIds: true
+    # noinspection SpellCheckingInspection
     clients:
       - WEBEMBEDDED
       - ANDROID_VR
@@ -44,6 +46,7 @@ logging:
     root: INFO
     lavalink: INFO
     lavalink.server.io.SocketContext: INFO
+    # noinspection SpellCheckingInspection,SpellCheckingInspection
     com.sedmelluq.discord.lavaplayer.tools.ExceptionTools: INFO
     dev.lavalink.youtube: INFO
   request:

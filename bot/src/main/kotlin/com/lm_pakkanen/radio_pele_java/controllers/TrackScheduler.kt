@@ -9,24 +9,23 @@ import dev.arbjerg.lavalink.client.LavalinkClient
 import dev.arbjerg.lavalink.client.event.TrackEndEvent
 import dev.arbjerg.lavalink.client.player.Track
 import dev.arbjerg.lavalink.protocol.v4.Message.EmittedEvent.TrackEndEvent.AudioTrackEndReason
-import lombok.extern.log4j.Log4j2
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import org.springframework.stereotype.Component
 import java.util.Optional
 import java.util.function.Consumer
 
-@Log4j2
 @Component
 class TrackScheduler(
-  private val lavalinkClient: LavalinkClient,
+  lavalinkClient: LavalinkClient,
   private val store: Store,
   private val tidalController: TidalController,
   private val spotifyController: SpotifyController
 ) {
 
   init {
-    lavalinkClient.on(TrackEndEvent::class.java)
-      .subscribe({ event -> onTrackEnd(event.endReason) })
+    lavalinkClient
+      .on(TrackEndEvent::class.java)
+      .subscribe { event -> onTrackEndHandler(event.endReason) }
   }
 
   companion object {
@@ -41,17 +40,13 @@ class TrackScheduler(
   private var guildId: Long? = null
   private var lastTextChan: TextChannel? = null
 
-  fun onTrackEnd(endReason: AudioTrackEndReason) {
-    this.onTrackEndHandler(endReason)
-  }
-
   val isPlaying: Boolean
     get() = getPlayer(guildId).track != null
 
   /**
    * Start the audio player.
    *
-   * @return boolean whether the action succeeeded.
+   * @return boolean whether the action succeeded.
    */
   fun play(): Boolean {
 
@@ -71,7 +66,7 @@ class TrackScheduler(
    * @param textChan       TextChannel instance where the command was invoked.
    * @param url            the URL of the song to add to the queue.
    * @param blockPlaylists
-   * @return boolean whether the action succeeeded.
+   * @return boolean whether the action succeeded.
    * @throws FailedToLoadSongException
    */
   @Throws(FailedToLoadSongException::class)
@@ -83,7 +78,7 @@ class TrackScheduler(
   ): Track {
 
     if (textChan != null) {
-      this.setLastTextChannel(textChan)
+      this.lastTextChan = textChan
     } else {
       // TODO log
     }
@@ -126,7 +121,7 @@ class TrackScheduler(
    * Skips the current song (stops the track and starts the next one in the
    * queue).
    *
-   * @return boolean whether the action succeeeded.
+   * @return boolean whether the action succeeded.
    */
   fun skipCurrentSong(): Optional<Track> {
     stopCurrentSong()
@@ -137,34 +132,30 @@ class TrackScheduler(
    * Stops the audio player and clears the queue. Sets the last text channel to
    * null.
    *
-   * @return boolean whether the action succeeeded.
    */
-  fun destroy(): Boolean {
+  fun destroy() {
     stopCurrentSong()
     this.store.clear()
     this.store.clearPlaylist()
     this.lastTextChan = null
-    return true
   }
 
   /**
    * Shuffles the current queue.
-   *
-   * @return boolean whether the action succeeeded.
    */
-  fun shuffle(): Boolean {
+  fun shuffle() {
     this.store.shuffle()
-    return true
   }
 
   /**
    * Handler for when a track ends. If the track ended normally, tries to start
    * the next track if the queue is not empty. Sends message to the latest text
-   * channel informing users about the next song or abou the queue being empty.
+   * channel informing users about the next song or about the queue being empty.
    *
    * @param endReason the reason the track ended. Supplied by superclass.
    */
   private fun onTrackEndHandler(endReason: AudioTrackEndReason) {
+
     if (endReason == AudioTrackEndReason.LOAD_FAILED) {
       return
     }
@@ -234,10 +225,4 @@ class TrackScheduler(
   private fun stopCurrentSong() {
     getPlayer(guildId).setPaused(false).setTrack(null).subscribe()
   }
-
-  private fun setLastTextChannel(textChan: TextChannel) {
-    this.lastTextChan = textChan
-  }
-
-
 }
