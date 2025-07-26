@@ -23,6 +23,7 @@ services:
       #timeout: 5s
       #retries: 360 # 60min * 60s / 10s = 360 retries for 1hr
   bot:
+    image: us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/radio-pele-bot/latest
     build: ./bot
     container_name: radio_pele_bot
     restart: unless-stopped

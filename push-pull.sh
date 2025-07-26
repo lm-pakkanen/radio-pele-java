@@ -2,5 +2,6 @@
 set -e
 
 docker compose build
-docker tag radio-pele-java-bot us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/latest
-docker push us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/latest
+docker tag radio-pele-java-bot us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/radio-pele-bot:latest
+docker push us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/radio-pele-bot:latest
+
