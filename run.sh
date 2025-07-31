@@ -2,5 +2,4 @@
 set -e
 
 docker compose down
-docker compose pull
-ocker compose up --no-build -d
+COMPOSE_BAKE=true docker compose up --build -d
