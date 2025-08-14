@@ -3,3 +3,4 @@ out/
 logs/
 **/resources/application-prod.yml
 **/*.log
+**/*.env
