@@ -35,8 +35,13 @@ plugins:
     allowDirectPlaylistIds: true
     # noinspection SpellCheckingInspection
     clients:
+      # See https://github.com/lavalink-devs/youtube-source?tab=readme-ov-file#available-clients
       - WEBEMBEDDED
+      - MWEB
+      - WEB
       - ANDROID_VR
+      - TV # Requires login, most recommended
+      - TVHTML5EMBEDDED # Requires login, 2nd most recommended
 metrics:
   prometheus:
     enabled: false
