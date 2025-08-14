@@ -32,6 +32,7 @@ plugins:
     enabled: true
     oauth:
       enabled: true
+      skipInitialization: true
       refreshToken: REPLACE_ME
     allowSearch: true
     allowDirectVideoIds: true

@@ -9,6 +9,7 @@ services:
       - SERVER_PORT=2333
       # This is not actually a secret, so whatever. The container is not exposed to the internet.
       - LAVALINK_SERVER_PASSWORD=j^t411l0@xVJy4pg%!0sfDge6bp4bPpS8aT1r&Ipc^Ir^JCx*epMjo$6@2EA
+      - PLUGINS_YOUTUBE_OAUTH_REFRESH_TOKEN=$PLUGINS_YOUTUBE_OAUTH_REFRESH_TOKEN
     volumes:
       - ./lavalink/application.yml:/opt/Lavalink/application.yml
       - ./lavalink/plugins/:/opt/Lavalink/plugins/
