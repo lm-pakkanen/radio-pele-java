@@ -30,6 +30,9 @@ lavalink:
 plugins:
   youtube:
     enabled: true
+    oauth:
+      enabled: true
+      refreshToken: REPLACE_ME
     allowSearch: true
     allowDirectVideoIds: true
     allowDirectPlaylistIds: true
