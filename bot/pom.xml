@@ -19,7 +19,6 @@
     <maven.compiler.source>24</maven.compiler.source>
     <maven.compiler.target>24</maven.compiler.target>
     <java.version>24</java.version>
-    <yt.version>1.13.3</yt.version>
   </properties>
 
   <repositories>
@@ -178,7 +177,7 @@
     <dependency>
       <groupId>net.dv8tion</groupId>
       <artifactId>JDA</artifactId>
-      <version>5.5.1</version>
+      <version>5.6.1</version>
     </dependency>
     <dependency>
       <groupId>dev.arbjerg</groupId>
