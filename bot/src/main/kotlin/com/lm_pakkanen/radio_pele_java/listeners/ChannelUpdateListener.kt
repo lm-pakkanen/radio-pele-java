@@ -3,8 +3,9 @@ package com.lm_pakkanen.radio_pele_java.listeners
 import com.lm_pakkanen.radio_pele_java.controllers.TrackScheduler
 import com.lm_pakkanen.radio_pele_java.interfaces.IEventListener
 import io.github.oshai.kotlinlogging.KotlinLogging
-import net.dv8tion.jda.api.entities.GuildVoiceState
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel
+import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent
 import org.springframework.stereotype.Component
@@ -16,14 +17,13 @@ class ChannelUpdateListener(
   private val trackScheduler: TrackScheduler
 ) : IEventListener {
 
-
   /**
    * Listens to GuildVoiceUpdateEvents and leaves the voice channel if only bots
    * are left in the bot's connected voice channel.
    */
   override fun onEvent(event: GenericEvent) {
 
-    log.debug { "Received event: $event" }
+    log.trace { "Received event: $event" }
 
     if (event !is GuildVoiceUpdateEvent) {
       // Don't care
@@ -34,30 +34,28 @@ class ChannelUpdateListener(
 
     if (chanUserLeftFrom == null) {
       // Don't care
-      log.debug { "No user channel available" }
+      log.trace { "No user channel available" }
       return
     }
 
-    val botVoiceState: GuildVoiceState? = event.guild.selfMember.voiceState
+    val botVoiceChannel: AudioChannelUnion? = event.guild.selfMember.voiceState?.channel
 
-    if (botVoiceState == null) {
+    if (botVoiceChannel == null || botVoiceChannel !is VoiceChannel) {
       // Don't care
-      log.debug { "No bot channel available" }
+      log.trace { "No bot channel available, or the channel is not of the correct type." }
       return
     }
-
-    val botChan: AudioChannel = botVoiceState.channel!!
 
     log.debug { "User left from channel '$chanUserLeftFrom.name'" }
-    log.debug { "Bot's current channel: '$botChan.name'" }
+    log.debug { "Bot's current channel: '$botVoiceChannel.name'" }
 
-    if (chanUserLeftFrom.id != botChan.id) {
+    if (chanUserLeftFrom.id != botVoiceChannel.id) {
       // Don't care
       log.debug { "User left from channel other than bot channel" }
       return
     }
 
-    val membersInChan = botChan.members
+    val membersInChan = botVoiceChannel.members
     val isAllBotsInChan = membersInChan.stream().allMatch { member -> member.user.isBot }
 
     log.debug { "Only bots left in the channel: $isAllBotsInChan" }
