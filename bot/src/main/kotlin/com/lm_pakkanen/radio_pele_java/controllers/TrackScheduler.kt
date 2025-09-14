@@ -10,9 +10,12 @@ import dev.arbjerg.lavalink.client.event.TrackEndEvent
 import dev.arbjerg.lavalink.client.player.Track
 import dev.arbjerg.lavalink.protocol.v4.Message.EmittedEvent.TrackEndEvent.AudioTrackEndReason
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.Optional
 import java.util.function.Consumer
+
+val logger = LoggerFactory.getLogger(TrackScheduler::class.java)
 
 @Component
 class TrackScheduler(
@@ -134,10 +137,16 @@ class TrackScheduler(
    *
    */
   fun destroy() {
-    stopCurrentSong()
-    this.store.clear()
-    this.store.clearPlaylist()
-    this.lastTextChan = null
+    try {
+      stopCurrentSong()
+    } catch (ex: Exception) {
+      logger.warn("Failed to stop current song", ex)
+    } finally {
+      this.store.clear()
+      this.store.clearPlaylist()
+      this.lastTextChan = null
+    }
+
   }
 
   /**
