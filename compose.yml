@@ -1,5 +1,7 @@
 services:
-  lavalink:
+  lavalink: &lavalink
+    profiles:
+      - prod
     # noinspection SpellCheckingInspection,SpellCheckingInspection
     image: ghcr.io/lavalink-devs/lavalink:4.1.1-distroless
     container_name: radio_pele_lavalink
@@ -23,7 +25,16 @@ services:
       #interval: 10s
       #timeout: 5s
       #retries: 360 # 60min * 60s / 10s = 360 retries for 1hr
+  lavalink-local:
+    <<: *lavalink
+    profiles:
+      - local
+    container_name: radio_pele_lavalink_local
+    ports:
+      - "2333:2333"
   bot:
+    profiles:
+      - prod
     image: us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/radio-pele-bot:latest
     build: ./bot
     container_name: radio_pele_bot
