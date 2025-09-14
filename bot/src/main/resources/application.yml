@@ -5,3 +5,9 @@ spring:
     active: prod
   jmx:
     enabled: false
+logging:
+  level:
+    root: INFO
+    com:
+      lm_pakkanen:
+        radio_pele_java: DEBUG
