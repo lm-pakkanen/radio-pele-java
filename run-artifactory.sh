@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
-docker compose pull --policy "always"
-docker compose up --no-build -d
+REFRESH_TOKEN=$(cat .env)
+
+docker compose --profile "prod" pull --policy "always"
+docker compose \
+   --profile "prod" \
+   --env-file ".env" \
+    up \
+    --no-build \
+    -d
 
