@@ -1,7 +1,9 @@
 #!/bin/bash
 set -e
 
-docker compose --profile "prod" build --no-cache
-docker tag radio-pele-java-bot us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/radio-pele-bot:latest
+echo "Building project"
+docker compose --profile "prod" build
+
+echo "Pushing image"
 docker push us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/radio-pele-bot:latest
 
