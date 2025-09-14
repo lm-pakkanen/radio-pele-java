@@ -30,7 +30,7 @@ class ChannelUpdateListener(
       return
     }
 
-    val chanUserLeftFrom: AudioChannel? = event.channelJoined
+    val chanUserLeftFrom: AudioChannel? = event.channelLeft
 
     if (chanUserLeftFrom == null) {
       // Don't care
