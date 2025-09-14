@@ -44,21 +44,23 @@ open class Config(
   @Value($$"${BOT_STATUS_MESSAGE:}")
   var botStatusMessage: String = ""
 
-  @JvmField
   @Value($$"${SPOTIFY_CLIENT_ID:}")
   var spotifyClientId: String = ""
 
-  @JvmField
   @Value($$"${SPOTIFY_CLIENT_SECRET:}")
   var spotifyClientSecret: String = ""
 
-  @JvmField
   @Value($$"${TIDAL_CLIENT_ID:}")
   var tidalClientId: String = ""
 
-  @JvmField
   @Value($$"${TIDAL_CLIENT_SECRET:}")
   var tidalClientSecret: String = ""
+
+  @Value($$"${NETWORK_NAME:localhost}")
+  var networkName: String = ""
+
+  @Value($$"${LAVALINK_PORT:2333}")
+  var lavalinkPort: String = ""
 
   @Bean
   open fun getLavalinkClient(): LavalinkClient {
@@ -67,7 +69,7 @@ open class Config(
 
     val primaryNodeOptions = NodeOptions.Builder()
       .setName("primary")
-      .setServerUri("http://lavalink:2333")
+      .setServerUri("http://$networkName:$lavalinkPort")
       .setPassword(lavalinkPassword)
       .build()
 
