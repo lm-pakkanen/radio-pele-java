@@ -17,41 +17,39 @@ import org.springframework.stereotype.Component
 @Lazy
 @Component
 class SkipCommand(
-  private val store: Store,
-  private val trackScheduler: TrackScheduler
-) : BaseCommand(), ICommandListener {
+    private val store: Store,
+    private val trackScheduler: TrackScheduler,
+) : BaseCommand(),
+    ICommandListener {
+    override val commandName = "skip"
+    override val commandDescription = "Skip the current song."
+    override val commandData = Commands.slash(this.commandName, this.commandDescription)
 
-  override val commandName = "skip"
-  override val commandDescription = "Skip the current song."
-  override val commandData = Commands.slash(this.commandName, this.commandDescription)
+    /** Skips the current song. */
+    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+        if (event.name != commandName) {
+            return
+        }
 
-  /** Skips the current song. */
-  override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+        try {
+            check(trackScheduler.isPlaying) { "No song to skip!" }
 
-    if (event.name != commandName) {
-      return
-    }
+            val textChan = super.getTextChan(event)
+            val nextTrack = this.trackScheduler.skipCurrentSong()
 
-    try {
-      check(trackScheduler.isPlaying) { "No song to skip!" }
+            MailMan.replyInteraction(event, SongSkippedEmbed().embed)
 
-      val textChan = super.getTextChan(event)
-      val nextTrack = this.trackScheduler.skipCurrentSong()
-
-      MailMan.replyInteraction(event, SongSkippedEmbed().embed)
-
-      nextTrack?.let { nextTrack ->
-        MailMan.send(
-          textChan,
-          CurrentSongEmbed(nextTrack, store).embed
-        )
-      } ?: run {
-        MailMan.send(textChan, QueueEmptyEmbed().embed)
-      }
-    } catch (ex: Exception) {
-      when (ex) {
-
-        is InvalidChannelException, is IllegalStateException -> {
+            nextTrack?.let { nextTrack ->
+                MailMan.send(
+                    textChan,
+                    CurrentSongEmbed(nextTrack, store).embed,
+                )
+            } ?: run {
+                MailMan.send(textChan, QueueEmptyEmbed().embed)
+            }
+        } catch (ex: Exception) {
+            when (ex) {
+                is InvalidChannelException, is IllegalStateException -> {
           MailMan.replyInteraction(event, ExceptionEmbed(ex).embed)
         }
 

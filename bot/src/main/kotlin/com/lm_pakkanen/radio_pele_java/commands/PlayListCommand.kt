@@ -22,97 +22,97 @@ import org.springframework.stereotype.Component
 @Lazy
 @Component
 class PlayListCommand(
-  private val store: Store,
-  private val trackScheduler: TrackScheduler
-) : BaseCommand(), ICommandListener {
+    private val store: Store,
+    private val trackScheduler: TrackScheduler,
+) : BaseCommand(),
+    ICommandListener {
+    override val commandName = "playlist"
+    override val commandDescription = "Play playlist from a given URL."
 
-  override val commandName = "playlist"
-  override val commandDescription = "Play playlist from a given URL."
+    override val commandData: SlashCommandData =
+        Commands
+            .slash(this.commandName, this.commandDescription)
+            .addOption(
+                OptionType.STRING,
+                "url",
+                "The URL of the playlist to play",
+                true,
+                false,
+            )
 
-  override val commandData: SlashCommandData =
-    Commands.slash(this.commandName, this.commandDescription)
-      .addOption(
-        OptionType.STRING,
-        "url",
-        "The URL of the playlist to play",
-        true,
-        false
-      )
-
-  /**
-   * Connects to the voice channel, adds the requested song to the queue and
-   * starts playback if necessary.
-   *
-   * @param event that initiated the command.
-   * @throws NullPointerException
-   */
-  @Throws(NullPointerException::class)
-  override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-
-    if (event.name != this.commandName) {
-      return
-    }
-
-    event.deferReply().queue()
-
-    try {
-      val textChan = super.getTextChan(event)
-
-      val guild: Guild = event.guild
-        ?: throw IllegalArgumentException("Guild cannot be null")
-
-      val guildId = guild.idLong
-      val url = event.getOption("url")!!.asString
-
-      val addedTrack = this.trackScheduler.addToQueue(
-        textChan,
-        guildId,
-        url,
-        false
-      )
-
-      val audioManager = guild.audioManager
-      connectToVoiceChan(event)
-
-      if (!audioManager.isSelfDeafened) {
-        audioManager.isSelfDeafened = true
-      }
-
-      if (!this.trackScheduler.isPlaying) {
-        this.trackScheduler.play()
-      }
-
-      MailMan.replyInteraction(
-        event,
-        SongAddedEmbed(addedTrack, this.store).embed
-      )
-    } catch (ex: Exception) {
-      when (ex) {
-
-        is InvalidChannelException, is NotInChannelException, is FailedToLoadSongException -> {
-          MailMan.replyInteraction(event, ExceptionEmbed(ex).embed)
+    /**
+     * Connects to the voice channel, adds the requested song to the queue and
+     * starts playback if necessary.
+     *
+     * @param event that initiated the command.
+     * @throws NullPointerException
+     */
+    @Throws(NullPointerException::class)
+    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+        if (event.name != this.commandName) {
+            return
         }
 
-        else -> throw ex
-      }
+        event.deferReply().queue()
+
+        try {
+            val textChan = super.getTextChan(event)
+
+            val guild: Guild =
+                event.guild
+                    ?: throw IllegalArgumentException("Guild cannot be null")
+
+            val guildId = guild.idLong
+            val url = event.getOption("url")!!.asString
+
+            val addedTrack =
+                this.trackScheduler.addToQueue(
+                    textChan,
+                    guildId,
+                    url,
+                    false,
+                )
+
+            val audioManager = guild.audioManager
+            connectToVoiceChan(event)
+
+            if (!audioManager.isSelfDeafened) {
+                audioManager.isSelfDeafened = true
+            }
+
+            if (!this.trackScheduler.isPlaying) {
+                this.trackScheduler.play()
+            }
+
+            MailMan.replyInteraction(
+                event,
+                SongAddedEmbed(addedTrack, this.store).embed,
+            )
+        } catch (ex: Exception) {
+            when (ex) {
+                is InvalidChannelException, is NotInChannelException, is FailedToLoadSongException -> {
+                    MailMan.replyInteraction(event, ExceptionEmbed(ex).embed)
+                }
+
+                else -> throw ex
+            }
+        }
     }
-  }
 
-  @Throws(NotInChannelException::class)
-  private fun connectToVoiceChan(event: SlashCommandInteractionEvent) {
-    val memberVoiceChannel: AudioChannel = tryGetMemberVoiceChan(event)
-    event.jda.directAudioController.connect(memberVoiceChannel)
-  }
+    @Throws(NotInChannelException::class)
+    private fun connectToVoiceChan(event: SlashCommandInteractionEvent) {
+        val memberVoiceChannel: AudioChannel = tryGetMemberVoiceChan(event)
+        event.jda.directAudioController.connect(memberVoiceChannel)
+    }
 
-  /**
-   * Tries to get the voice channel of the member who initiated the command.
-   *
-   * @param event that initiated the command.
-   * @throws NotInChannelException
-   */
-  @Throws(NotInChannelException::class)
-  private fun tryGetMemberVoiceChan(event: SlashCommandInteractionEvent): AudioChannel {
-
+    /**
+     * Tries to get the voice channel of the member who initiated the command.
+     *
+     * @param event that initiated the command.
+     * @throws NotInChannelException
+     */
+    @Throws(NotInChannelException::class)
+    private fun tryGetMemberVoiceChan(event: SlashCommandInteractionEvent): AudioChannel {
     val member: Member = event.member ?: throw IllegalStateException("Member cannot be null")
     val memberVoiceState = member.voiceState ?: throw NotInChannelException()
 

@@ -10,76 +10,76 @@ import java.net.URI
 import java.net.URISyntaxException
 
 class TrackResolver(
-  private val tidalController: TidalController,
-  private val spotifyController: SpotifyController
+    private val tidalController: TidalController,
+    private val spotifyController: SpotifyController,
 ) {
+    /**
+     * Try to resolve a song from a given URL. If the track can't be found, throws
+     * an exception. Uses the LavaPlayer library to resolve the track. Spotify API
+     * is used to resolve Spotify URLs into track and artist names.
+     *
+     * @param guildId    to use for connecting later on.
+     * @param url        to try to resolve.
+     * @param asPlaylist whether to resolve as a playlist or a single track.
+     * @return resolved tracks.
+     * @throws FailedToLoadSongException when song(s) cannot be resolved
+     */
+    @Throws(FailedToLoadSongException::class)
+    fun resolve(
+        guildId: Long,
+        url: String,
+        asPlaylist: Boolean,
+    ): List<Track> {
+        var asPlaylist = asPlaylist
+        val capacity = if (asPlaylist) Config.PLAYLIST_MAX_SIZE else 1
+        val finalUrls: MutableList<String> = ArrayList(capacity)
 
-  /**
-   * Try to resolve a song from a given URL. If the track can't be found, throws
-   * an exception. Uses the LavaPlayer library to resolve the track. Spotify API
-   * is used to resolve Spotify URLs into track and artist names.
-   *
-   * @param guildId    to use for connecting later on.
-   * @param url        to try to resolve.
-   * @param asPlaylist whether to resolve as a playlist or a single track.
-   * @return resolved tracks.
-   * @throws FailedToLoadSongException when song(s) cannot be resolved
-   */
-  @Throws(FailedToLoadSongException::class)
-  fun resolve(guildId: Long, url: String, asPlaylist: Boolean): List<Track> {
+        var uri: URI
 
-    var asPlaylist = asPlaylist
-    val capacity = if (asPlaylist) Config.PLAYLIST_MAX_SIZE else 1
-    val finalUrls: MutableList<String> = ArrayList(capacity)
+        try {
+            uri = URI(url)
+            Assert.notNull(uri.host, "URI host is null")
+        } catch (ex: Exception) {
+            when (ex) {
+                is URISyntaxException, is IllegalArgumentException -> {
+                    throw FailedToLoadSongException("Invalid URL.")
+                }
 
-    var uri: URI
-
-    try {
-      uri = URI(url)
-      Assert.notNull(uri.host, "URI host is null")
-    } catch (ex: Exception) {
-      when (ex) {
-
-        is URISyntaxException, is IllegalArgumentException -> {
-          throw FailedToLoadSongException("Invalid URL.")
+                else -> throw ex
+            }
         }
 
-        else -> throw ex
-      }
+        val uriDomain = uri.host
 
-    }
+        if (uriDomain.contains("spotify")) {
+            val qualifiedTrackNames = this.spotifyController.resolveQualifiedTrackNames(url)
 
-    val uriDomain = uri.host
+            qualifiedTrackNames.stream().map { n -> "ytsearch:$n" }.forEach { n -> finalUrls.add(n) }
+            asPlaylist = false
+        } else if (uriDomain.contains("tidal")) {
+            val qualifiedTrackNames = this.tidalController.resolveQualifiedTrackNames(url)
 
-    if (uriDomain.contains("spotify")) {
-      val qualifiedTrackNames = this.spotifyController.resolveQualifiedTrackNames(url)
+            for (qualifiedTrackName in qualifiedTrackNames) {
+                finalUrls.add("ytsearch:$qualifiedTrackName")
+            }
 
-      qualifiedTrackNames.stream().map { n -> "ytsearch:$n" }.forEach { n -> finalUrls.add(n) }
-      asPlaylist = false
-    } else if (uriDomain.contains("tidal")) {
-      val qualifiedTrackNames = this.tidalController.resolveQualifiedTrackNames(url)
+            asPlaylist = false
+        } else {
+            finalUrls.add(url)
+        }
 
-      for (qualifiedTrackName in qualifiedTrackNames) {
-        finalUrls.add("ytsearch:$qualifiedTrackName")
-      }
+        if (finalUrls.isEmpty()) {
+            throw FailedToLoadSongException("Not found.")
+        }
 
-      asPlaylist = false
-    } else {
-      finalUrls.add(url)
-    }
+        val audioLoader = AudioLoader(asPlaylist)
 
-    if (finalUrls.isEmpty()) {
-      throw FailedToLoadSongException("Not found.")
-    }
+        finalUrls.forEach({ finalUrl: String ->
+            val loadResult: LavalinkLoadResult =
+                getLink(guildId).loadItem(finalUrl).block()
+                    ?: throw IllegalArgumentException("Could not load result for '$finalUrl'")
 
-    val audioLoader = AudioLoader(asPlaylist)
-
-    finalUrls.forEach({ finalUrl: String ->
-      val loadResult: LavalinkLoadResult =
-        getLink(guildId).loadItem(finalUrl).block()
-          ?: throw IllegalArgumentException("Could not load result for '$finalUrl'")
-
-      audioLoader.accept(loadResult)
+            audioLoader.accept(loadResult)
     })
 
     val resolvedTracks: MutableList<Track> = audioLoader.resolvedTracks

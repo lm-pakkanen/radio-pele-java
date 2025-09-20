@@ -7,5 +7,5 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 open class RadioPeleJavaApplication
 
 fun main(args: Array<String>) {
-  SpringApplication.run(RadioPeleJavaApplication::class.java, *args)
+    SpringApplication.run(RadioPeleJavaApplication::class.java, *args)
 }

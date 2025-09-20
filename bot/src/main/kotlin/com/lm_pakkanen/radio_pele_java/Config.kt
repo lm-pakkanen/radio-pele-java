@@ -22,83 +22,83 @@ import org.springframework.util.Assert
 @Log4j2
 @Configuration
 @ComponentScan(
-  basePackages = ["com.lm_pakkanen.radio_pele_java.controllers", "com.lm_pakkanen.radio_pele_java.models"
-  ]
+    basePackages = [
+        "com.lm_pakkanen.radio_pele_java.controllers", "com.lm_pakkanen.radio_pele_java.models",
+    ],
 )
-open class Config(
-) {
+open class Config {
+    companion object {
+        const val PLAYLIST_MAX_SIZE: Int = 100
+    }
 
-  companion object {
-    const val PLAYLIST_MAX_SIZE: Int = 100
-  }
+    @Value($$"${REGEN_COMMANDS:false}")
+    var regenCommands: Boolean = false
 
-  @Value($$"${REGEN_COMMANDS:false}")
-  var regenCommands: Boolean = false
+    @Value($$"${LAVALINK_PASSWORD:}")
+    var lavalinkPassword: String = ""
 
-  @Value($$"${LAVALINK_PASSWORD:}")
-  var lavalinkPassword: String = ""
+    @Value($$"${BOT_TOKEN:}")
+    var botToken: String = ""
 
-  @Value($$"${BOT_TOKEN:}")
-  var botToken: String = ""
+    @Value($$"${BOT_STATUS_MESSAGE:}")
+    var botStatusMessage: String = ""
 
-  @Value($$"${BOT_STATUS_MESSAGE:}")
-  var botStatusMessage: String = ""
+    @Value($$"${SPOTIFY_CLIENT_ID:}")
+    var spotifyClientId: String = ""
 
-  @Value($$"${SPOTIFY_CLIENT_ID:}")
-  var spotifyClientId: String = ""
+    @Value($$"${SPOTIFY_CLIENT_SECRET:}")
+    var spotifyClientSecret: String = ""
 
-  @Value($$"${SPOTIFY_CLIENT_SECRET:}")
-  var spotifyClientSecret: String = ""
+    @Value($$"${TIDAL_CLIENT_ID:}")
+    var tidalClientId: String = ""
 
-  @Value($$"${TIDAL_CLIENT_ID:}")
-  var tidalClientId: String = ""
+    @Value($$"${TIDAL_CLIENT_SECRET:}")
+    var tidalClientSecret: String = ""
 
-  @Value($$"${TIDAL_CLIENT_SECRET:}")
-  var tidalClientSecret: String = ""
+    @Value($$"${NETWORK_NAME:localhost}")
+    var networkName: String = ""
 
-  @Value($$"${NETWORK_NAME:localhost}")
-  var networkName: String = ""
+    @Value($$"${LAVALINK_PORT:2333}")
+    var lavalinkPort: String = ""
 
-  @Value($$"${LAVALINK_PORT:2333}")
-  var lavalinkPort: String = ""
+    @Bean
+    open fun getLavalinkClient(): LavalinkClient {
+        val userId = getUserIdFromToken(botToken)
+        val client = LavalinkClient(userId)
 
-  @Bean
-  open fun getLavalinkClient(): LavalinkClient {
-    val userId = getUserIdFromToken(botToken)
-    val client = LavalinkClient(userId)
+        val primaryNodeOptions =
+            NodeOptions
+                .Builder()
+                .setName("primary")
+                .setServerUri("http://$networkName:$lavalinkPort")
+                .setPassword(lavalinkPassword)
+                .build()
 
-    val primaryNodeOptions = NodeOptions.Builder()
-      .setName("primary")
-      .setServerUri("http://$networkName:$lavalinkPort")
-      .setPassword(lavalinkPassword)
-      .build()
+        client.addNode(primaryNodeOptions)
+        // TODO handle node connection errors.
 
-    client.addNode(primaryNodeOptions)
-    // TODO handle node connection errors.
+        return client
+    }
 
-    return client
-  }
-
-  /**
-   * Generates JDA client instance.
-   *
-   * @param commands       autowired commands to listen to.
-   * @param eventListeners autowired event listeners to listen to.
-   * @return JDA instance.
-   */
-  @Bean
-  open fun getJDAInstance(
-    lavalinkClient: LavalinkClient,
-    commands: Array<ICommandListener>,
-    eventListeners: Array<IEventListener>
+    /**
+     * Generates JDA client instance.
+     *
+     * @param commands       autowired commands to listen to.
+     * @param eventListeners autowired event listeners to listen to.
+     * @return JDA instance.
+     */
+    @Bean
+    open fun getJDAInstance(
+        lavalinkClient: LavalinkClient,
+        commands: Array<ICommandListener>,
+        eventListeners: Array<IEventListener>,
   ): JDA {
-
     Assert.isTrue(commands.isNotEmpty(), "Commands cannot be empty.")
 
     val clientBuilder = JDABuilder.createDefault(botToken)
 
     clientBuilder.setVoiceDispatchInterceptor(
-      JDAVoiceUpdateListener(lavalinkClient)
+      JDAVoiceUpdateListener(lavalinkClient),
     )
 
     clientBuilder.setStatus(OnlineStatus.ONLINE)
@@ -116,13 +116,13 @@ open class Config(
     }
 
     if (this.regenCommands) {
-
       // Regenerate commands if env variable is set to true.
       val commandBuilder = CommandBuilder(commands)
       commandBuilder.autoGenerateCommands()
 
-      val generatedSlashCommands = commandBuilder
-        .slashCommands
+      val generatedSlashCommands =
+        commandBuilder
+          .slashCommands
 
       client.updateCommands().addCommands(*generatedSlashCommands).queue()
     }

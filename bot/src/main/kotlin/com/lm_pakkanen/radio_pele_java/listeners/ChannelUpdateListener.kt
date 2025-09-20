@@ -14,54 +14,54 @@ private val log = KotlinLogging.logger {}
 
 @Component
 class ChannelUpdateListener(
-  private val trackScheduler: TrackScheduler
+    private val trackScheduler: TrackScheduler,
 ) : IEventListener {
+    /**
+     * Listens to GuildVoiceUpdateEvents and leaves the voice channel if only bots
+     * are left in the bot's connected voice channel.
+     */
+    override fun onEvent(event: GenericEvent) {
+        log.trace { "Received event: $event" }
 
-  /**
-   * Listens to GuildVoiceUpdateEvents and leaves the voice channel if only bots
-   * are left in the bot's connected voice channel.
-   */
-  override fun onEvent(event: GenericEvent) {
+        if (event !is GuildVoiceUpdateEvent) {
+            // Don't care
+            return
+        }
 
-    log.trace { "Received event: $event" }
+        val chanUserLeftFrom: AudioChannel? = event.channelLeft
 
-    if (event !is GuildVoiceUpdateEvent) {
-      // Don't care
-      return
-    }
+        if (chanUserLeftFrom == null) {
+            // Don't care
+            log.trace { "No user channel available" }
+            return
+        }
 
-    val chanUserLeftFrom: AudioChannel? = event.channelLeft
+        val botVoiceChannel: AudioChannelUnion? =
+            event.guild.selfMember.voiceState
+                ?.channel
 
-    if (chanUserLeftFrom == null) {
-      // Don't care
-      log.trace { "No user channel available" }
-      return
-    }
+        if (botVoiceChannel == null || botVoiceChannel !is VoiceChannel) {
+            // Don't care
+            log.trace { "No bot channel available, or the channel is not of the correct type." }
+            return
+        }
 
-    val botVoiceChannel: AudioChannelUnion? = event.guild.selfMember.voiceState?.channel
+        log.debug { "User left from channel '$chanUserLeftFrom.name'" }
+        log.debug { "Bot's current channel: '$botVoiceChannel.name'" }
 
-    if (botVoiceChannel == null || botVoiceChannel !is VoiceChannel) {
-      // Don't care
-      log.trace { "No bot channel available, or the channel is not of the correct type." }
-      return
-    }
+        if (chanUserLeftFrom.id != botVoiceChannel.id) {
+            // Don't care
+            log.debug { "User left from channel other than bot channel" }
+            return
+        }
 
-    log.debug { "User left from channel '$chanUserLeftFrom.name'" }
-    log.debug { "Bot's current channel: '$botVoiceChannel.name'" }
+        val membersInChan = botVoiceChannel.members
+        val isAllBotsInChan = membersInChan.stream().allMatch { member -> member.user.isBot }
 
-    if (chanUserLeftFrom.id != botVoiceChannel.id) {
-      // Don't care
-      log.debug { "User left from channel other than bot channel" }
-      return
-    }
+        log.debug { "Only bots left in the channel: $isAllBotsInChan" }
 
-    val membersInChan = botVoiceChannel.members
-    val isAllBotsInChan = membersInChan.stream().allMatch { member -> member.user.isBot }
-
-    log.debug { "Only bots left in the channel: $isAllBotsInChan" }
-
-    if (isAllBotsInChan) {
-      // Clear queue and leave channel if only bots left in the channel
+        if (isAllBotsInChan) {
+            // Clear queue and leave channel if only bots left in the channel
       trackScheduler.destroy()
       event.jda.directAudioController.disconnect(event.guild)
     }

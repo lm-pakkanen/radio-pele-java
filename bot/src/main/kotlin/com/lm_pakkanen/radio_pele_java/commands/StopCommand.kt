@@ -17,54 +17,52 @@ import org.springframework.stereotype.Component
 @Log4j2
 @Component
 class StopCommand(
-  private val trackScheduler: TrackScheduler
-) : BaseCommand(), ICommandListener {
+    private val trackScheduler: TrackScheduler,
+) : BaseCommand(),
+    ICommandListener {
+    override val commandName = "stop"
+    override val commandDescription = "Stop playback and leave."
+    override val commandData = Commands.slash(this.commandName, this.commandDescription)
 
-  override val commandName = "stop"
-  override val commandDescription = "Stop playback and leave."
-  override val commandData = Commands.slash(this.commandName, this.commandDescription)
+    /** Stops playback and leaves the voice channel. */
+    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+        if (event.name != this.commandName) {
+            return
+        }
 
-  /** Stops playback and leaves the voice channel. */
-  override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+        try {
+            super.getTextChan(event)
 
-    if (event.name != this.commandName) {
-      return
+            this.trackScheduler.destroy()
+            disconnectFromVoiceChan(event)
+
+            MailMan.replyInteraction(event, StopEmbed().embed)
+        } catch (exception: InvalidChannelException) {
+            MailMan.replyInteraction(event, ExceptionEmbed(exception).embed)
+        }
     }
 
-    try {
-      super.getTextChan(event)
-
-      this.trackScheduler.destroy()
-      disconnectFromVoiceChan(event)
-
-      MailMan.replyInteraction(event, StopEmbed().embed)
-    } catch (exception: InvalidChannelException) {
-      MailMan.replyInteraction(event, ExceptionEmbed(exception).embed)
+    private fun disconnectFromVoiceChan(event: SlashCommandInteractionEvent) {
+        try {
+            val memberVoiceChannel: AudioChannel = tryGetMemberVoiceChan(event)
+            event.jda.directAudioController.disconnect(memberVoiceChannel.guild)
+        } catch (ex: Exception) {
+            // TODO
+        }
     }
-  }
 
-  private fun disconnectFromVoiceChan(event: SlashCommandInteractionEvent) {
-    try {
-      val memberVoiceChannel: AudioChannel = tryGetMemberVoiceChan(event)
-      event.jda.directAudioController.disconnect(memberVoiceChannel.guild)
-    } catch (ex: Exception) {
-      // TODO
-    }
-  }
+    /**
+     * Tries to get the voice channel of the member who initiated the command.
+     *
+     * @param event that initiated the command.
+     * @throws NotInChannelException
+     */
+    @Throws(NotInChannelException::class)
+    private fun tryGetMemberVoiceChan(event: SlashCommandInteractionEvent): AudioChannel {
+        val member: Member = event.member ?: throw IllegalStateException("Member cannot be null")
+        val memberVoiceState = member.voiceState ?: throw NotInChannelException()
 
-  /**
-   * Tries to get the voice channel of the member who initiated the command.
-   *
-   * @param event that initiated the command.
-   * @throws NotInChannelException
-   */
-  @Throws(NotInChannelException::class)
-  private fun tryGetMemberVoiceChan(event: SlashCommandInteractionEvent): AudioChannel {
-
-    val member: Member = event.member ?: throw IllegalStateException("Member cannot be null")
-    val memberVoiceState = member.voiceState ?: throw NotInChannelException()
-
-    if (!memberVoiceState.inAudioChannel()) {
+        if (!memberVoiceState.inAudioChannel()) {
       throw NotInChannelException()
     }
 

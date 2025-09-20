@@ -14,177 +14,171 @@ import java.util.TimerTask
 
 @Component
 class TidalController(
-  private val config: Config
+    private val config: Config,
 ) {
+    private val tidalApi: TidalApi = TidalApi()
 
-  private val tidalApi: TidalApi = TidalApi()
+    /**
+     * Whether the Tidal API is authorised or not.
+     */
+    var isUsable: Boolean = true
+        private set
 
-  /**
-   * @return boolean whether the Tidal API is usable or not.
-   */
-  /**
-   * Whether the Tidal API is authorised or not.
-   */
-  var isUsable: Boolean = true
-    private set
-
-  /**
-   * @param config instance.
-   */
-  init {
-    refreshAccessToken()
-  }
-
-  @Throws(FailedToLoadSongException::class)
-  fun resolveQualifiedTrackNames(url: String?): Array<String> {
-
-    if (url == null || url.isEmpty()) {
-      throw FailedToLoadSongException("URL is empty")
+    /**
+     * @param config instance.
+     */
+    init {
+        refreshAccessToken()
     }
 
-    val isArtist = url.contains("/artist/")
-    val isAlbum = url.contains("/album/")
-    val isMix = url.contains("/mix/")
-    val isPlaylist = url.contains("/playlist/")
-    val isVideo = url.contains("/video/")
+    @Throws(FailedToLoadSongException::class)
+    fun resolveQualifiedTrackNames(url: String?): Array<String> {
+        if (url == null || url.isEmpty()) {
+            throw FailedToLoadSongException("URL is empty")
+        }
 
-    val resolveAsPlaylist = isArtist || isAlbum || isPlaylist
+        val isArtist = url.contains("/artist/")
+        val isAlbum = url.contains("/album/")
+        val isMix = url.contains("/mix/")
+        val isPlaylist = url.contains("/playlist/")
+        val isVideo = url.contains("/video/")
 
-    val capacity = if (resolveAsPlaylist) Config.PLAYLIST_MAX_SIZE else 1
-    val entityId = getEntityIdFromUrl(url)
+        val resolveAsPlaylist = isArtist || isAlbum || isPlaylist
 
-    val resolvedTracks = getResolvedTracks(
-      entityId,
-      isArtist,
-      isAlbum,
-      isMix,
-      isPlaylist,
-      isVideo
-    )
+        val capacity = if (resolveAsPlaylist) Config.PLAYLIST_MAX_SIZE else 1
+        val entityId = getEntityIdFromUrl(url)
 
-    val qualifiedTrackNames: MutableList<String> = ArrayList(capacity)
+        val resolvedTracks =
+            getResolvedTracks(
+                entityId,
+                isArtist,
+                isAlbum,
+                isMix,
+                isPlaylist,
+                isVideo,
+            )
 
-    for (i in resolvedTracks.indices) {
+        val qualifiedTrackNames: MutableList<String> = ArrayList(capacity)
 
-      val resolvedTrack = resolvedTracks[i] ?: break
-      val resolvedTrackArtists = listOf(*resolvedTrack.artists)
+        for (i in resolvedTracks.indices) {
+            val resolvedTrack = resolvedTracks[i] ?: break
+            val resolvedTrackArtists = listOf(*resolvedTrack.artists)
 
-      val artist = resolvedTrackArtists
-        .stream()
-        .filter { n -> n.isMainArtist }
-        .findFirst()
-        .orElse(resolvedTrackArtists[0])
+            val artist =
+                resolvedTrackArtists
+                    .stream()
+                    .filter { n -> n.isMainArtist }
+                    .findFirst()
+                    .orElse(resolvedTrackArtists[0])
 
-      val qualifiedTrackNameBuilder = StringBuilder()
+            val qualifiedTrackNameBuilder = StringBuilder()
 
-      if (artist != null) {
-        qualifiedTrackNameBuilder.append(artist.name)
-        qualifiedTrackNameBuilder.append(" - ")
-      }
+            if (artist != null) {
+                qualifiedTrackNameBuilder.append(artist.name)
+                qualifiedTrackNameBuilder.append(" - ")
+            }
 
-      qualifiedTrackNameBuilder.append(resolvedTrack.title)
+            qualifiedTrackNameBuilder.append(resolvedTrack.title)
 
-      val qualifiedTrackName = qualifiedTrackNameBuilder.toString()
-      qualifiedTrackNames[i] = qualifiedTrackName
+            val qualifiedTrackName = qualifiedTrackNameBuilder.toString()
+            qualifiedTrackNames[i] = qualifiedTrackName
+        }
+
+        return qualifiedTrackNames.toTypedArray()
     }
 
-    return qualifiedTrackNames.toTypedArray()
-  }
+    @Throws(FailedToLoadSongException::class)
+    private fun getResolvedTracks(
+        entityId: String,
+        isArtist: Boolean,
+        isAlbum: Boolean,
+        isMix: Boolean,
+        isPlaylist: Boolean,
+        isVideo: Boolean,
+    ): Array<TidalTrack?> {
+        if (isAlbum) {
+            throw UnsupportedOperationException("Albums not supported yet")
+        }
 
-  @Throws(FailedToLoadSongException::class)
-  private fun getResolvedTracks(
-    entityId: String,
-    isArtist: Boolean,
-    isAlbum: Boolean,
-    isMix: Boolean,
-    isPlaylist: Boolean,
-    isVideo: Boolean
-  ): Array<TidalTrack?> {
+        if (isMix) {
+            throw UnsupportedOperationException("Mixes not supported yet")
+        }
 
-    if (isAlbum) {
-      throw UnsupportedOperationException("Albums not supported yet")
+        if (isPlaylist) {
+            throw UnsupportedOperationException("Playlists not supported yet")
+        }
+
+        if (isVideo) {
+            throw UnsupportedOperationException("Videos not supported yet")
+        }
+
+        try {
+            if (isArtist) {
+                return this.tidalApi.tracks.listByArtist(
+                    entityId,
+                    "FI",
+                    Config.PLAYLIST_MAX_SIZE,
+                )
+            }
+
+            return arrayOf(
+                this.tidalApi.tracks.get(entityId, "FI"),
+            )
+        } catch (exception: QueryException) {
+            throw FailedToLoadSongException(exception.message!!)
+        }
     }
 
-    if (isMix) {
-      throw UnsupportedOperationException("Mixes not supported yet")
+    /**
+     * Gets entity ID from the given URL.
+     *
+     * @param url to get entity ID from.
+     * @return entity ID.
+     * @throws FailedToLoadSongException
+     */
+    @Throws(FailedToLoadSongException::class)
+    private fun getEntityIdFromUrl(url: String): String {
+        val entityIdStartIndex = url.lastIndexOf("/") + 1
+
+        var entityIdEndIndex = url.length
+
+        if (url.contains("?")) {
+            entityIdEndIndex = url.indexOf("?")
+        }
+
+        if (entityIdEndIndex <= entityIdStartIndex) {
+            throw FailedToLoadSongException("Failed to get entity ID from URL")
+        }
+
+        val entityId = url.substring(entityIdStartIndex, entityIdEndIndex)
+
+        if (entityId.isEmpty()) {
+            throw FailedToLoadSongException("Failed to get entity ID from URL")
+        }
+
+        return entityId
     }
 
-    if (isPlaylist) {
-      throw UnsupportedOperationException("Playlists not supported yet")
-    }
+    /**
+     * Refreshes the access token and schedules the next refresh recursively.
+     */
+    private fun refreshAccessToken() {
+        val tidalClientId = this.config.tidalClientId
+        val tidalClientSecret = this.config.tidalClientSecret
 
-    if (isVideo) {
-      throw UnsupportedOperationException("Videos not supported yet")
-    }
+        try {
+            this.tidalApi.authorize(tidalClientId, tidalClientSecret)
+            this.isUsable = true
+        } catch (_: InvalidCredentialsException) {
+            this.isUsable = false
+            return
+        } catch (_: UnauthorizedException) {
+            this.isUsable = false
+            return
+        }
 
-    try {
-
-      if (isArtist) {
-        return this.tidalApi.tracks.listByArtist(
-          entityId, "FI",
-          Config.PLAYLIST_MAX_SIZE
-        )
-      }
-
-      return arrayOf(
-        this.tidalApi.tracks.get(entityId, "FI")
-      )
-    } catch (exception: QueryException) {
-      throw FailedToLoadSongException(exception.message!!)
-    }
-  }
-
-  /**
-   * Gets entity ID from the given URL.
-   *
-   * @param url to get entity ID from.
-   * @return entity ID.
-   * @throws FailedToLoadSongException
-   */
-  @Throws(FailedToLoadSongException::class)
-  private fun getEntityIdFromUrl(url: String): String {
-    val entityIdStartIndex = url.lastIndexOf("/") + 1
-
-    var entityIdEndIndex = url.length
-
-    if (url.contains("?")) {
-      entityIdEndIndex = url.indexOf("?")
-    }
-
-    if (entityIdEndIndex <= entityIdStartIndex) {
-      throw FailedToLoadSongException("Failed to get entity ID from URL")
-    }
-
-    val entityId = url.substring(entityIdStartIndex, entityIdEndIndex)
-
-    if (entityId.isEmpty()) {
-      throw FailedToLoadSongException("Failed to get entity ID from URL")
-    }
-
-    return entityId
-  }
-
-  /**
-   * Refreshes the access token and schedules the next refresh recursively.
-   */
-  private fun refreshAccessToken() {
-
-    val tidalClientId = this.config.tidalClientId
-    val tidalClientSecret = this.config.tidalClientSecret
-
-    try {
-      this.tidalApi.authorize(tidalClientId, tidalClientSecret)
-      this.isUsable = true
-    } catch (_: InvalidCredentialsException) {
-      this.isUsable = false
-      return
-    } catch (_: UnauthorizedException) {
-      this.isUsable = false
-      return
-    }
-
-    val credentials = CredentialsStore.getInstance().credentials
-    val nextRefreshExpiresInSeconds = credentials.getExpiresInSeconds()
+        val credentials = CredentialsStore.getInstance().credentials
+        val nextRefreshExpiresInSeconds = credentials.getExpiresInSeconds()
 
     /**
      * Time next access token refresh to happen 5 minutes before the current
@@ -195,11 +189,12 @@ class TidalController(
     val nextRefreshDelayInMs: Long = nextRefreshDelayInSeconds * 1000
     val refreshAccessTokenTimer = Timer()
 
-    val refreshTokenTask: TimerTask = object : TimerTask() {
-      override fun run() {
-        refreshAccessToken()
+    val refreshTokenTask: TimerTask =
+      object : TimerTask() {
+        override fun run() {
+          refreshAccessToken()
+        }
       }
-    }
 
     // Schedule this method again.
     refreshAccessTokenTimer.schedule(refreshTokenTask, nextRefreshDelayInMs)

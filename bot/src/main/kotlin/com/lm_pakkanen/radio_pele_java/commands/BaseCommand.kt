@@ -7,21 +7,19 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 abstract class BaseCommand : ListenerAdapter() {
+    /**
+     * @param event which initiated the command.
+     * @return the text channel where the command was initiated.
+     * @throws InvalidChannelException
+     */
+    @Throws(InvalidChannelException::class)
+    fun getTextChan(event: SlashCommandInteractionEvent): TextChannel {
+        val messageChan = event.channel
 
-  /**
-   * @param event which initiated the command.
-   * @return the text channel where the command was initiated.
-   * @throws InvalidChannelException
-   */
-  @Throws(InvalidChannelException::class)
-  fun getTextChan(event: SlashCommandInteractionEvent): TextChannel {
+        if (messageChan.type != ChannelType.TEXT) {
+            throw InvalidChannelException()
+        }
 
-    val messageChan = event.channel
-
-    if (messageChan.type != ChannelType.TEXT) {
-      throw InvalidChannelException()
-    }
-
-    return messageChan.asTextChannel()
+        return messageChan.asTextChannel()
   }
 }

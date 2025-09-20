@@ -8,8 +8,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
  * getting information about the command.
  */
 interface ICommandListener : EventListener {
-
-  val commandName: String
-  val commandDescription: String
-  val commandData: SlashCommandData
+    val commandName: String
+    val commandDescription: String
+    val commandData: SlashCommandData
 }
