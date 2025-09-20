@@ -8,9 +8,6 @@ import dev.arbjerg.lavalink.client.player.Track
 import org.springframework.util.Assert
 import java.net.URI
 import java.net.URISyntaxException
-import java.util.Optional
-import java.util.function.Consumer
-import java.util.function.Supplier
 
 class TrackResolver(
   private val tidalController: TidalController,
@@ -77,12 +74,11 @@ class TrackResolver(
 
     val audioLoader = AudioLoader(asPlaylist)
 
-    finalUrls.forEach(Consumer { finalUrl: String? ->
-      val loadResult = Optional.ofNullable<LavalinkLoadResult>(
-        getLink(guildId).loadItem(finalUrl!!).block()
-      ).orElseThrow(
-        Supplier { IllegalArgumentException("Could not load result for '$finalUrl'") }
-      )
+    finalUrls.forEach({ finalUrl: String ->
+      val loadResult: LavalinkLoadResult =
+        getLink(guildId).loadItem(finalUrl).block()
+          ?: throw IllegalArgumentException("Could not load result for '$finalUrl'")
+
       audioLoader.accept(loadResult)
     })
 

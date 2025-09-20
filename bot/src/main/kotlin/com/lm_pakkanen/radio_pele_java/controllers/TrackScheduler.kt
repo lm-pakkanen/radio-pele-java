@@ -12,18 +12,22 @@ import dev.arbjerg.lavalink.protocol.v4.Message.EmittedEvent.TrackEndEvent.Audio
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import java.util.Optional
-import java.util.function.Consumer
 
 val logger = LoggerFactory.getLogger(TrackScheduler::class.java)
 
 @Component
 class TrackScheduler(
   lavalinkClient: LavalinkClient,
+  tidalController: TidalController,
+  spotifyController: SpotifyController,
   private val store: Store,
-  private val tidalController: TidalController,
-  private val spotifyController: SpotifyController
+
 ) {
+
+  private val trackResolver: TrackResolver = TrackResolver(
+    tidalController,
+    spotifyController
+  )
 
   init {
     lavalinkClient
@@ -34,11 +38,6 @@ class TrackScheduler(
   companion object {
     private val PLAYLIST_URI_MATCHERS: List<String> = listOf("/playlist/", "/album/", "?list=", "&list=")
   }
-
-  private val trackResolver: TrackResolver = TrackResolver(
-    this.tidalController,
-    this.spotifyController
-  )
 
   private var guildId: Long? = null
   private var lastTextChan: TextChannel? = null
@@ -83,12 +82,12 @@ class TrackScheduler(
     if (textChan != null) {
       this.lastTextChan = textChan
     } else {
-      // TODO log
+      logger.warn("Text channel is null, cannot set lastTextChan.")
     }
 
     this.guildId = guildId
 
-    if (url == null || url.isEmpty()) {
+    if (url.isNullOrEmpty()) {
       throw FailedToLoadSongException("Invalid url.")
     }
 
@@ -110,7 +109,7 @@ class TrackScheduler(
     if (asPlaylist) {
       this.store.addPlaylist(audioTracks)
     } else {
-      val addResult = this.store.add(Optional.of(firstTrack))
+      val addResult = this.store.add(firstTrack)
 
       if (!addResult) {
         throw FailedToLoadSongException("Not found.")
@@ -126,7 +125,7 @@ class TrackScheduler(
    *
    * @return boolean whether the action succeeded.
    */
-  fun skipCurrentSong(): Optional<Track> {
+  fun skipCurrentSong(): Track? {
     stopCurrentSong()
     return this.playNextTrack()
   }
@@ -173,35 +172,29 @@ class TrackScheduler(
       return
     }
 
-    val nextTrackOpt = this.playNextTrack()
+    val nextTrack = this.playNextTrack()
 
     val textChannel = this.lastTextChan
       ?: throw IllegalStateException("Last text chan is not available.")
 
-    if (nextTrackOpt.isEmpty) {
+    if (nextTrack == null) {
       MailMan.send(
-        Optional.of(textChannel),
+        textChannel,
         QueueEmptyEmbed().embed
       )
       return
     }
 
-    val nextTrack = nextTrackOpt.get()
-
-    if (this.lastTextChan != null) {
-      MailMan.send(
-        Optional.of(textChannel),
-        CurrentSongEmbed(nextTrack, this.store).embed
-      )
-    } else {
-      // TODO log
-    }
+    MailMan.send(
+      textChannel,
+      CurrentSongEmbed(nextTrack, this.store).embed
+    )
   }
 
   /**
    * Plays the next track in the queue if available.
    */
-  private fun playNextTrack(): Optional<Track> {
+  private fun playNextTrack(): Track? {
 
     if (this.store.getQueueSize() > 0 || !this.store.hasPlaylist()) {
 
@@ -209,26 +202,26 @@ class TrackScheduler(
         this.store.clearPlaylist()
       }
 
-      val nextTrackOpt = this.store.shift()
+      val nextTrack = this.store.shift()
 
-      nextTrackOpt.ifPresentOrElse(Consumer { nextTrack ->
+      nextTrack?.let { nextTrack ->
         getPlayer(guildId).setTrack(nextTrack).subscribe()
-      }, Runnable {
-        // TODO log
-      })
+      } ?: run {
+        logger.warn("No next track available in the queue.")
+      }
 
-      return nextTrackOpt
+      return nextTrack
     }
 
-    val nextTrackOpt = this.store.shiftPlaylist()
+    val nextTrack = this.store.shiftPlaylist()
 
-    nextTrackOpt.ifPresentOrElse(Consumer { nextTrack ->
+    nextTrack?.let { nextTrack ->
       getPlayer(guildId).setTrack(nextTrack).subscribe()
-    }, Runnable {
-      // TODO log
-    })
+    } ?: run {
+      logger.warn("No next track available in the playlist.")
+    }
 
-    return nextTrackOpt
+    return nextTrack
   }
 
   private fun stopCurrentSong() {

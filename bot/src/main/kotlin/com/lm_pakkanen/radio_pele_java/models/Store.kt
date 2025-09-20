@@ -4,7 +4,6 @@ import com.lm_pakkanen.radio_pele_java.Config
 import dev.arbjerg.lavalink.client.player.Track
 import lombok.extern.log4j.Log4j2
 import org.springframework.stereotype.Component
-import java.util.Optional
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.math.min
@@ -19,11 +18,13 @@ class Store {
   /**
    * Adds a track to the queue.
    *
-   * @param trackOpt to add.
+   * @param track to add.
    */
-  fun add(trackOpt: Optional<Track>): Boolean {
+  fun add(track: Track?): Boolean {
     var wasPresent = false
-    trackOpt.ifPresent { track -> wasPresent = this.queue.offer(track) }
+
+    track?.let { track -> wasPresent = this.queue.offer(track) }
+
     return wasPresent
   }
 
@@ -48,12 +49,8 @@ class Store {
    *
    * @return the first track from the queue or null if queue is empty.
    */
-  fun shift(): Optional<Track> {
-
-    val trackOpt: Optional<Track> = Optional.ofNullable(queue.poll())
-    trackOpt.ifPresentOrElse({ track -> }, { })
-
-    return trackOpt
+  fun shift(): Track? {
+    return queue.poll()
   }
 
   /**
@@ -61,13 +58,13 @@ class Store {
    *
    * @return the first track from the queue or null if queue is empty.
    */
-  fun shiftPlaylist(): Optional<Track> {
+  fun shiftPlaylist(): Track? {
 
     if (this.playListQueue.isEmpty()) {
-      return Optional.empty()
+      return null
     }
 
-    return Optional.ofNullable(this.playListQueue.removeAt(0))
+    return this.playListQueue.removeAt(0)
   }
 
   fun clear() {

@@ -6,10 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.springframework.boot.test.context.SpringBootTest
-import java.util.Optional
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 internal class StoreTest {
 
   companion object {
@@ -29,7 +26,7 @@ internal class StoreTest {
     Assertions.assertEquals(0, this.store.getQueueSize())
     Assertions.assertEquals(0, this.store.getPlaylistQueueSize())
 
-    this.store.add(Optional.of<Track>(audioTrackMock))
+    this.store.add(audioTrackMock)
 
     Assertions.assertEquals(1, this.store.getQueueSize())
     Assertions.assertEquals(0, this.store.getPlaylistQueueSize())
@@ -67,28 +64,28 @@ internal class StoreTest {
   @Test
   @DisplayName("Test shift")
   fun testShift() {
-    val trackOpt: Optional<Track> = this.store.shift()
-    this.store.add(Optional.of<Track>(audioTrackMock))
-    val track2Opt: Optional<Track> = this.store.shift()
-    Assertions.assertEquals(true, trackOpt.isEmpty)
-    Assertions.assertEquals(false, track2Opt.isEmpty)
+    val track: Track? = this.store.shift()
+    this.store.add(audioTrackMock)
+    val track2: Track? = this.store.shift()
+    Assertions.assertEquals(true, track == null)
+    Assertions.assertEquals(true, track2 != null)
   }
 
   @Test
   @DisplayName("Test shift playlist")
   fun testShiftPlaylist() {
-    val trackOpt: Optional<Track> = this.store.shiftPlaylist()
+    val trackOpt: Track? = this.store.shiftPlaylist()
     this.store.addPlaylist(listOf(audioTrackMock))
-    val track2Opt: Optional<Track> = this.store.shiftPlaylist()
-    Assertions.assertEquals(true, trackOpt.isEmpty)
-    Assertions.assertEquals(true, track2Opt.isPresent)
+    val track2Opt: Track? = this.store.shiftPlaylist()
+    Assertions.assertEquals(true, trackOpt == null)
+    Assertions.assertEquals(true, track2Opt != null)
   }
 
   @Test
   @DisplayName("Test clearing queue")
   fun testClearingQueue() {
     Assertions.assertEquals(0, this.store.getQueueSize())
-    this.store.add(Optional.of(audioTrackMock))
+    this.store.add(audioTrackMock)
     Assertions.assertEquals(1, this.store.getQueueSize())
     this.store.clear()
     Assertions.assertEquals(0, this.store.getQueueSize())

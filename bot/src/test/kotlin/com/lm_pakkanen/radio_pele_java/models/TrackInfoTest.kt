@@ -3,10 +3,8 @@ package com.lm_pakkanen.radio_pele_java.models
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.springframework.boot.test.context.SpringBootTest
 import java.util.AbstractMap
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 internal class TrackInfoTest {
 
   @Test

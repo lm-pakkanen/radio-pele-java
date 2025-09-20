@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
-import java.util.Optional
 
 @Lazy
 @Component
@@ -28,6 +27,7 @@ class SkipCommand(
 
   /** Skips the current song. */
   override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+
     if (event.name != commandName) {
       return
     }
@@ -36,19 +36,18 @@ class SkipCommand(
       check(trackScheduler.isPlaying) { "No song to skip!" }
 
       val textChan = super.getTextChan(event)
-      val nextTrackOpt = this.trackScheduler
-        .skipCurrentSong()
+      val nextTrack = this.trackScheduler.skipCurrentSong()
 
       MailMan.replyInteraction(event, SongSkippedEmbed().embed)
 
-      nextTrackOpt.ifPresentOrElse({ nextTrack ->
+      nextTrack?.let { nextTrack ->
         MailMan.send(
-          Optional.of(textChan),
+          textChan,
           CurrentSongEmbed(nextTrack, store).embed
         )
-      }, {
-        MailMan.send(Optional.of(textChan), QueueEmptyEmbed().embed)
-      })
+      } ?: run {
+        MailMan.send(textChan, QueueEmptyEmbed().embed)
+      }
     } catch (ex: Exception) {
       when (ex) {
 

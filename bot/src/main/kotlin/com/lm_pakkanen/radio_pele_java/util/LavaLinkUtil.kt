@@ -6,8 +6,6 @@ import dev.arbjerg.lavalink.client.player.LavalinkPlayer
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.stereotype.Component
-import org.springframework.util.Assert
-import java.util.Optional
 
 
 @Component
@@ -19,14 +17,12 @@ class LavaLinkUtil : ApplicationContextAware {
 
     fun getPlayer(guildId: Long?): LavalinkPlayer {
       val link: Link = getLink(guildId)
-      return Optional.ofNullable(link.cachedPlayer)
-        .orElse(link.createOrUpdatePlayer().block())
+      return link.cachedPlayer ?: link.createOrUpdatePlayer().block()
     }
 
     fun getLink(guildId: Long?): Link {
-      Assert.notNull(guildId, "Guild ID must not be null.")
-      return Optional.ofNullable(client.getLinkIfCached(guildId!!))
-        .orElse(client.getOrCreateLink(guildId))
+      checkNotNull(guildId)
+      return client.getLinkIfCached(guildId) ?: client.getOrCreateLink(guildId)
     }
   }
 

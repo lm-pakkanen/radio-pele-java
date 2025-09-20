@@ -3,7 +3,6 @@ package com.lm_pakkanen.radio_pele_java.controllers
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import java.util.Optional
 
 class MailMan {
 
@@ -12,35 +11,33 @@ class MailMan {
     /**
      * Send a new message to specified text channel.
      *
-     * @param textChanOpt to reply to.
+     * @param textChan to reply to.
      * @param message     to reply with.
      */
-    fun send(textChanOpt: Optional<TextChannel>, message: String) {
+    fun send(textChan: TextChannel?, message: String) {
 
-      if (textChanOpt.isEmpty) {
+      if (textChan == null) {
         return
       }
 
-      val textChan = textChanOpt.get()
       textChan.sendMessage(message).queue()
     }
 
     /**
      * Send a new embed to specified text channel.
      *
-     * @param textChanOpt to reply to.
+     * @param textChan to reply to.
      * @param embed       to reply with.
      */
     fun send(
-      textChanOpt: Optional<TextChannel>,
+      textChan: TextChannel?,
       embed: MessageEmbed
     ) {
 
-      if (textChanOpt.isEmpty) {
+      if (textChan == null) {
         return
       }
 
-      val textChan = textChanOpt.get()
       textChan.sendMessageEmbeds(embed).queue()
     }
 
