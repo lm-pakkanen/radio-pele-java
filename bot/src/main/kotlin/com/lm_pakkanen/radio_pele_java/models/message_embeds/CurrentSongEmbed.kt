@@ -1,6 +1,7 @@
 package com.lm_pakkanen.radio_pele_java.models.message_embeds
 
 import com.lm_pakkanen.radio_pele_java.interfaces.IEmbedBuilder
+import com.lm_pakkanen.radio_pele_java.models.RefinedTrackInfo
 import com.lm_pakkanen.radio_pele_java.models.Store
 import dev.arbjerg.lavalink.client.player.Track
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -10,12 +11,13 @@ class CurrentSongEmbed(track: Track, store: Store) : IEmbedBuilder {
   override val embed: MessageEmbed
 
   init {
-    val trackInfo = track.info
+
+    val trackInfo = RefinedTrackInfo(track)
 
     val trackTitleWithDurationBuilder = StringBuilder()
-    trackTitleWithDurationBuilder.append(trackInfo.sourceName)
+    trackTitleWithDurationBuilder.append(trackInfo.qualifiedName)
     trackTitleWithDurationBuilder.append(" | ")
-    trackTitleWithDurationBuilder.append(trackInfo.length)
+    trackTitleWithDurationBuilder.append(trackInfo.duration)
 
     val trackTitleWithDuration = trackTitleWithDurationBuilder
       .toString()
