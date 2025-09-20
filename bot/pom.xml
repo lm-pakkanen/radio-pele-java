@@ -49,7 +49,6 @@
             </goals>
             <configuration>
               <sourceDirs>
-                <source>src/main/kotlin</source>
                 <source>target/generated-sources/annotations</source>
               </sourceDirs>
             </configuration>
@@ -62,7 +61,6 @@
             </goals>
             <configuration>
               <sourceDirs>
-                <source>src/test/kotlin</source>
                 <source>target/generated-test-sources/test-annotations</source>
               </sourceDirs>
             </configuration>
