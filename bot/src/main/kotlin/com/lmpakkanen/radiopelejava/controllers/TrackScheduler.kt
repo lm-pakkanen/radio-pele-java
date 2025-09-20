@@ -2,8 +2,8 @@ package com.lmpakkanen.radiopelejava.controllers
 
 import com.lmpakkanen.radiopelejava.models.Store
 import com.lmpakkanen.radiopelejava.models.exceptions.FailedToLoadSongException
-import com.lmpakkanen.radiopelejava.models.message_embeds.CurrentSongEmbed
-import com.lmpakkanen.radiopelejava.models.message_embeds.QueueEmptyEmbed
+import com.lmpakkanen.radiopelejava.models.messages.embeds.CurrentSongEmbed
+import com.lmpakkanen.radiopelejava.models.messages.embeds.QueueEmptyEmbed
 import com.lmpakkanen.radiopelejava.util.LavaLinkUtil.Companion.getPlayer
 import dev.arbjerg.lavalink.client.LavalinkClient
 import dev.arbjerg.lavalink.client.event.TrackEndEvent
