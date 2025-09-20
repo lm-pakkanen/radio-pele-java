@@ -1,7 +1,11 @@
 .PHONY: format
 format:
-	mvn clean ktlint:format
+	mvn ktlint:format
 
 .PHONY: check
 check:
-	mvn clean ktlint:check
+	mvn ktlint:check
+
+.PHONY: test
+test:
+	mvn clean test
