@@ -9,3 +9,7 @@ check:
 .PHONY: test
 test:
 	mvn clean test
+
+.PHONY: push
+push:
+	../push-pull.sh
