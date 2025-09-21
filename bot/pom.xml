@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.0</version>
+    <version>3.5.6</version>
     <relativePath/>
   </parent>
   <groupId>com.lm_pakkanen</groupId>
@@ -15,10 +15,18 @@
   <name>radio-pele-java</name>
 
   <properties>
-    <kotlin.version>2.2.0</kotlin.version>
+    <kotlin.version>2.2.20</kotlin.version>
     <maven.compiler.source>24</maven.compiler.source>
     <maven.compiler.target>24</maven.compiler.target>
     <java.version>24</java.version>
+    <!-- Dependency versions -->
+    <ktlint-maven-plugin.version>3.5.0</ktlint-maven-plugin.version>
+    <jda.version>5.6.1</jda.version>
+    <lavalink-client.version>3.2.0</lavalink-client.version>
+    <spotify-web-api-java.version>9.2.0</spotify-web-api-java.version>
+    <jackson-jr-objects.version>2.19.0</jackson-jr-objects.version>
+    <tidal_api.version>0.0.1</tidal_api.version>
+    <kotlin-logging-jvm.version>7.0.7</kotlin-logging-jvm.version>
   </properties>
 
   <repositories>
@@ -132,7 +140,7 @@
       <plugin>
         <groupId>com.github.gantsign.maven</groupId>
         <artifactId>ktlint-maven-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>${ktlint-maven-plugin.version}</version>
       </plugin>
     </plugins>
   </build>
@@ -181,37 +189,37 @@
     <dependency>
       <groupId>net.dv8tion</groupId>
       <artifactId>JDA</artifactId>
-      <version>5.6.1</version>
+      <version>${jda.version}</version>
     </dependency>
     <dependency>
       <groupId>dev.arbjerg</groupId>
       <artifactId>lavalink-client</artifactId>
-      <version>3.2.0</version>
+      <version>${lavalink-client.version}</version>
     </dependency>
     <dependency>
       <groupId>se.michaelthelin.spotify</groupId>
       <artifactId>spotify-web-api-java</artifactId>
-      <version>9.2.0</version>
+      <version>${spotify-web-api-java.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.jr</groupId>
       <artifactId>jackson-jr-objects</artifactId>
-      <version>2.19.0</version>
+      <version>${jackson-jr-objects.version}</version>
     </dependency>
     <dependency>
       <groupId>io.github.lm-pakkanen</groupId>
       <artifactId>tidal_api</artifactId>
-      <version>0.0.1</version>
+      <version>${tidal_api.version}</version>
     </dependency>
     <dependency>
       <groupId>io.github.oshai</groupId>
       <artifactId>kotlin-logging-jvm</artifactId>
-      <version>7.0.7</version>
+      <version>${kotlin-logging-jvm.version}</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.38</version>
+      <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
