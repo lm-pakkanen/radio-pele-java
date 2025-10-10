@@ -21,7 +21,7 @@
     <java.version>24</java.version>
     <!-- Dependency versions -->
     <ktlint-maven-plugin.version>3.5.0</ktlint-maven-plugin.version>
-    <jda.version>5.6.1</jda.version>
+    <jda.version>6.0.0</jda.version>
     <lavalink-client.version>3.2.0</lavalink-client.version>
     <spotify-web-api-java.version>9.2.0</spotify-web-api-java.version>
     <jackson-jr-objects.version>2.19.0</jackson-jr-objects.version>
