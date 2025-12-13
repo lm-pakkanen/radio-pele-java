@@ -4,4 +4,4 @@ logs/
 **/resources/application-prod.yml
 **/*.log
 **/*.env
-.idea/copilot.*
+.idea
