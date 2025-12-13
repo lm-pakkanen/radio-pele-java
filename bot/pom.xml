@@ -4,156 +4,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.6</version>
-    <relativePath/>
+    <groupId>com.lm_pakkanen</groupId>
+    <artifactId>radio-pele-java</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>com.lm_pakkanen</groupId>
   <artifactId>radio-pele-java-bot</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>radio-pele-java</name>
-
-  <properties>
-    <kotlin.version>2.2.20</kotlin.version>
-    <maven.compiler.source>24</maven.compiler.source>
-    <maven.compiler.target>24</maven.compiler.target>
-    <java.version>24</java.version>
-    <!-- Dependency versions -->
-    <ktlint-maven-plugin.version>3.5.0</ktlint-maven-plugin.version>
-    <jda.version>6.0.0</jda.version>
-    <lavalink-client.version>3.2.0</lavalink-client.version>
-    <spotify-web-api-java.version>9.2.0</spotify-web-api-java.version>
-    <jackson-jr-objects.version>2.19.0</jackson-jr-objects.version>
-    <tidal_api.version>0.0.1</tidal_api.version>
-    <kotlin-logging-jvm.version>7.0.7</kotlin-logging-jvm.version>
-  </properties>
-
-  <repositories>
-    <repository>
-      <id>jitpack</id>
-      <url>https://jitpack.io</url>
-    </repository>
-    <repository>
-      <id>arbjergDev-releases</id>
-      <name>Lavalink Repository</name>
-      <url>https://maven.lavalink.dev/releases</url>
-    </repository>
-  </repositories>
-  <build>
-    <sourceDirectory>src/main/kotlin</sourceDirectory>
-    <testSourceDirectory>src/test/kotlin</testSourceDirectory>
-    <plugins>
-      <plugin>
-        <groupId>org.jetbrains.kotlin</groupId>
-        <artifactId>kotlin-maven-plugin</artifactId>
-        <version>${kotlin.version}</version>
-        <executions>
-          <execution>
-            <id>compile</id>
-            <phase>compile</phase>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <sourceDirs>
-                <source>target/generated-sources/annotations</source>
-              </sourceDirs>
-            </configuration>
-          </execution>
-          <execution>
-            <id>test-compile</id>
-            <phase>test-compile</phase>
-            <goals>
-              <goal>test-compile</goal>
-            </goals>
-            <configuration>
-              <sourceDirs>
-                <source>target/generated-test-sources/test-annotations</source>
-              </sourceDirs>
-            </configuration>
-          </execution>
-        </executions>
-        <configuration>
-          <jvmTarget>${maven.compiler.target}</jvmTarget>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven-compiler-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>default-compile</id>
-            <phase>none</phase>
-          </execution>
-          <execution>
-            <id>default-testCompile</id>
-            <phase>none</phase>
-          </execution>
-          <execution>
-            <id>compile</id>
-            <phase>compile</phase>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>testCompile</id>
-            <phase>test-compile</phase>
-            <goals>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-              <version>${lombok.version}</version>
-            </path>
-          </annotationProcessorPaths>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
-        <configuration>
-          <argLine>-Xshare:off -XX:+EnableDynamicAgentLoading</argLine>
-          <parallel>all</parallel>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${maven-failsafe-plugin.version}</version>
-        <configuration>
-          <argLine>-Xshare:off</argLine>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>com.github.gantsign.maven</groupId>
-        <artifactId>ktlint-maven-plugin</artifactId>
-        <version>${ktlint-maven-plugin.version}</version>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
       <artifactId>kotlin-stdlib-jdk8</artifactId>
-      <version>${kotlin.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
       <artifactId>kotlin-test</artifactId>
-      <version>${kotlin.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -165,22 +28,10 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.vaadin.external.google</groupId>
-          <artifactId>android-json</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-logging</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -189,38 +40,35 @@
     <dependency>
       <groupId>net.dv8tion</groupId>
       <artifactId>JDA</artifactId>
-      <version>${jda.version}</version>
     </dependency>
     <dependency>
       <groupId>dev.arbjerg</groupId>
       <artifactId>lavalink-client</artifactId>
-      <version>${lavalink-client.version}</version>
     </dependency>
     <dependency>
       <groupId>se.michaelthelin.spotify</groupId>
       <artifactId>spotify-web-api-java</artifactId>
-      <version>${spotify-web-api-java.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.jr</groupId>
       <artifactId>jackson-jr-objects</artifactId>
-      <version>${jackson-jr-objects.version}</version>
     </dependency>
     <dependency>
       <groupId>io.github.lm-pakkanen</groupId>
       <artifactId>tidal_api</artifactId>
-      <version>${tidal_api.version}</version>
     </dependency>
     <dependency>
       <groupId>io.github.oshai</groupId>
       <artifactId>kotlin-logging-jvm</artifactId>
-      <version>${kotlin-logging-jvm.version}</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
     </dependency>
   </dependencies>
 </project>
