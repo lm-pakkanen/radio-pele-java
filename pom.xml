@@ -15,9 +15,7 @@
   <packaging>pom</packaging>
   <properties>
     <kotlin.version>2.2.21</kotlin.version>
-    <maven.compiler.source>24</maven.compiler.source>
-    <maven.compiler.target>24</maven.compiler.target>
-    <java.version>24</java.version>
+    <maven.compiler.release>24</maven.compiler.release>
     <start-class>com.lmpakkanen.radiopelejava.RadioPeleJavaApplicationKt</start-class>
     <!-- Dependency versions -->
     <ktlint-maven-plugin.version>3.5.0</ktlint-maven-plugin.version>

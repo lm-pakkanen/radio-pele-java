@@ -3,6 +3,7 @@ set -e
 
 REFRESH_TOKEN=$(cat .env)
 
+docker compose --profile "prod" down || true
 docker compose --profile "prod" pull --policy "always"
 docker compose \
    --profile "prod" \

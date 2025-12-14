@@ -36,7 +36,9 @@ services:
     profiles:
       - prod
     image: us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/radio-pele-bot:latest
-    build: ./bot
+    build:
+      context: .
+      dockerfile: ./bot/Dockerfile
     container_name: radio_pele_bot
     restart: unless-stopped
     depends_on:
