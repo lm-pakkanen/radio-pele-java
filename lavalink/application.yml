@@ -45,8 +45,8 @@ plugins:
       - MWEB
       - WEB
       - ANDROID_VR
-      - TV # Requires login, most recommended
-      - TVHTML5EMBEDDED # Requires login, 2nd most recommended
+      #- TV # Requires login, most recommended
+      #- TVHTML5EMBEDDED # Requires login, 2nd most recommended
 metrics:
   prometheus:
     enabled: false
