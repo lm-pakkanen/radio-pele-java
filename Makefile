@@ -3,7 +3,6 @@ run:
 	COMPOSE_BAKE=true docker compose --profile "prod" up --build -d
 
 run-artifactory:
-	REFRESH_TOKEN=$(cat .env)
 	docker compose --profile "prod" down || true
 	docker compose --profile "prod" pull --policy "always"
 	docker compose \
