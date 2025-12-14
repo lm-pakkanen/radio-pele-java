@@ -41,12 +41,12 @@ plugins:
     # noinspection SpellCheckingInspection
     clients:
       # See https://github.com/lavalink-devs/youtube-source?tab=readme-ov-file#available-clients
+      - TVHTML5EMBEDDED # Requires login
+      - TV # Requires login
       - WEBEMBEDDED
       - MWEB
       - WEB
       - ANDROID_VR
-      #- TV # Requires login, most recommended
-      #- TVHTML5EMBEDDED # Requires login, 2nd most recommended
 metrics:
   prometheus:
     enabled: false
@@ -56,7 +56,7 @@ logging:
     root: INFO
     lavalink: INFO
     lavalink.server.io.SocketContext: INFO
-    # noinspection SpellCheckingInspection,SpellCheckingInspection
+    # noinspection SpellCheckingInspection
     com.sedmelluq.discord.lavaplayer.tools.ExceptionTools: INFO
     dev.lavalink.youtube: INFO
   request:
