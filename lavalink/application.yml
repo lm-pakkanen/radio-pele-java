@@ -30,6 +30,8 @@ lavalink:
       socketTimeoutMs: 3000
 plugins:
   youtube:
+    remoteCipher:
+      url: "https://cipher.kikkia.dev/"
     enabled: true
     oauth:
       enabled: true
