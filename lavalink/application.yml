@@ -43,10 +43,10 @@ plugins:
       # See https://github.com/lavalink-devs/youtube-source?tab=readme-ov-file#available-clients
       - TVHTML5EMBEDDED # Requires login
       - TV # Requires login
-      - WEBEMBEDDED
-      - MWEB
-      - WEB
-      - ANDROID_VR
+      #- WEBEMBEDDED
+      #- MWEB
+      #- WEB
+      #- ANDROID_VR
 metrics:
   prometheus:
     enabled: false
