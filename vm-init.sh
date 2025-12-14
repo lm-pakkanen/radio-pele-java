@@ -2,6 +2,4 @@
 
 sudo apt update && sudo apt upgrade -y
 
-cd "${HOME}/radio-pele-java" &&
-  git pull &&
-  ./run-artifactory.sh
+cd "${HOME}/radio-pele-java" && git pull && make run-artifactory

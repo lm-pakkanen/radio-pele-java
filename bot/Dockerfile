@@ -23,4 +23,4 @@ WORKDIR /radio-pele
 COPY --from=maven-bot /build/bot/target/radio-pele-java-bot-0.0.1-SNAPSHOT.jar ./radio_pele.jar
 COPY ./bot/entrypoint.sh ./entrypoint.sh
 
-ENTRYPOINT ["sh", "entrypoint.sh"]
+ENTRYPOINT ["java", "-jar", "-noverify", "./radio_pele.jar"]
