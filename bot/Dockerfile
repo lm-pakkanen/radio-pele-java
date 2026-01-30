@@ -11,10 +11,8 @@ FROM maven-parent AS maven-bot
 
 WORKDIR /build/bot
 COPY ./bot/pom.xml ./pom.xml
-RUN --mount=type=cache,target=/tmp/build mvn dependency:go-offline -Dmaven.repo.local=/tmp/build
-
 COPY ./bot/src ./src
-RUN --mount=type=cache,target=/tmp/build mvn package -Dmaven.repo.local=/tmp/build -Dmaven.test.skip --offline
+RUN --mount=type=cache,target=/tmp/build mvn package -Dmaven.repo.local=/tmp/build -Dmaven.test.skip
 
 FROM eclipse-temurin:${JAVA_VERSION}-jre-alpine AS jdk
 
