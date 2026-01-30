@@ -4,7 +4,7 @@ services:
       - prod
     # noinspection SpellCheckingInspection,SpellCheckingInspection
     # See https://github.com/lavalink-devs/Lavalink/releases
-    image: ghcr.io/lavalink-devs/lavalink:4.1.1-distroless
+    image: ghcr.io/lavalink-devs/lavalink:4.1.2-distroless
     container_name: radio_pele_lavalink
     restart: unless-stopped
     environment:
