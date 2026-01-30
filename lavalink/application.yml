@@ -43,12 +43,12 @@ plugins:
     # noinspection SpellCheckingInspection
     clients:
       # See https://github.com/lavalink-devs/youtube-source?tab=readme-ov-file#available-clients
-      - TV # Requires login
-      - TVHTML5EMBEDDED # Requires login
-      #- WEBEMBEDDED
-      #- MWEB
-      #- WEB
-      #- ANDROID_VR
+      #- TV # Requires login
+      #- TVHTML5EMBEDDED # Requires login
+      - WEBEMBEDDED
+      - MWEB
+      - WEB
+      - ANDROID_VR
 metrics:
   prometheus:
     enabled: false
