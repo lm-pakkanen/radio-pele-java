@@ -7,6 +7,7 @@ import com.lmpakkanen.radiopelejava.models.messages.embeds.QueueEmptyEmbed
 import com.lmpakkanen.radiopelejava.util.LavaLinkUtil.Companion.getPlayer
 import dev.arbjerg.lavalink.client.LavalinkClient
 import dev.arbjerg.lavalink.client.event.TrackEndEvent
+import dev.arbjerg.lavalink.client.player.PlayerUpdateBuilder
 import dev.arbjerg.lavalink.client.player.Track
 import dev.arbjerg.lavalink.protocol.v4.Message.EmittedEvent.TrackEndEvent.AudioTrackEndReason
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
@@ -201,7 +202,7 @@ class TrackScheduler(
             val nextTrack = this.store.shift()
 
             nextTrack?.let { nextTrack ->
-                getPlayer(guildId).setTrack(nextTrack).subscribe()
+                doPlay(nextTrack)
             } ?: run {
                 logger.warn("No next track available in the queue.")
             }
@@ -212,7 +213,7 @@ class TrackScheduler(
         val nextTrack = this.store.shiftPlaylist()
 
         nextTrack?.let { nextTrack ->
-            getPlayer(guildId).setTrack(nextTrack).subscribe()
+            doPlay(nextTrack)
         } ?: run {
             logger.warn("No next track available in the playlist.")
         }
@@ -222,5 +223,15 @@ class TrackScheduler(
 
     private fun stopCurrentSong() {
         getPlayer(guildId).setPaused(false).setTrack(null).subscribe()
+    }
+
+    private fun doPlay(track: Track) {
+        var playerUpdateBuilder: PlayerUpdateBuilder = getPlayer(guildId).setPaused(false).setTrack(track)
+
+        if (track.info.isSeekable) {
+            playerUpdateBuilder = playerUpdateBuilder.setPosition(track.info.position)
+        }
+
+        playerUpdateBuilder.subscribe()
     }
 }
