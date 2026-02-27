@@ -228,7 +228,10 @@ class TrackScheduler(
     private fun doPlay(track: Track) {
         var playerUpdateBuilder: PlayerUpdateBuilder = getPlayer(guildId).setPaused(false).setTrack(track)
 
+        logger.debug("Track '${track.info.title}' is seekable: ${track.info.isSeekable}")
+
         if (track.info.isSeekable) {
+            logger.debug("Seeking track '${track.info.title}' to ${track.info.position}")
             playerUpdateBuilder = playerUpdateBuilder.setPosition(track.info.position)
         }
 
