@@ -1,9 +1,12 @@
+stop:
+	docker compose --profile "prod" down || true
+
 run:
-	docker compose down
+	make stop
 	COMPOSE_BAKE=true docker compose --profile "prod" up --build -d
 
 run-artifactory:
-	docker compose --profile "prod" down || true
+	make stop
 	docker compose --profile "prod" pull --policy "always"
 	docker compose \
 	  --profile "prod" \
