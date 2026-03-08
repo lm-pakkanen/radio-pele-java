@@ -19,7 +19,7 @@ push-pull:
 	docker push us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/radio-pele-bot:latest
 
 upgrade-major:
-	 mvn versions:use-latest-versions@upgrade-major versions:update-properties@upgrade-major versions:commit
+	 mvn versions:use-latest-versions@upgrade-major versions:update-properties@upgrade-major-properties versions:commit
 
 format:
 	cd bot && mvn ktlint:format

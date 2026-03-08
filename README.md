@@ -8,6 +8,14 @@ source. This version should be kept up to date because it often fixes roadblocks
 
 This bot was originally written with TypeScript -- this is a complete rewrite of it using Java / Spring Boot.
 
+# Upgrading
+
+1. Run `make upgrade-major`
+2. Upgrade Lavalink image in `compose.yml` (https://github.com/lavalink-devs/lavalink/releases)
+3. Download YT source plugin from https://github.com/lavalink-devs/youtube-source/releases
+   - Place in `lavalink/plugins` 
+4. Change YT source plugin version in `application.yml`
+
 # Running the bot
 
 This bot can be run in two ways:
