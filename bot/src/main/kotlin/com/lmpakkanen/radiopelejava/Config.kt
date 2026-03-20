@@ -28,7 +28,7 @@ import org.springframework.util.Assert
 )
 open class Config {
     companion object {
-        const val PLAYLIST_MAX_SIZE: Int = 100
+        const val PLAYLIST_MAX_SIZE: Int = 25
     }
 
     @Value($$"${REGEN_COMMANDS:false}")
@@ -103,7 +103,10 @@ open class Config {
 
         clientBuilder.setStatus(OnlineStatus.ONLINE)
         clientBuilder.setActivity(Activity.playing(botStatusMessage))
-        clientBuilder.enableCache(CacheFlag.VOICE_STATE)
+
+        clientBuilder.disableCache(CacheFlag.entries.toMutableSet().apply {
+            remove(CacheFlag.VOICE_STATE)  // Keep only this
+        })
 
         val client = clientBuilder.build()
 

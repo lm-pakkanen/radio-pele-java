@@ -6,24 +6,34 @@ lavalink:
   server:
     sources:
       youtube: false
-      # noinspection SpellCheckingInspection
       bandcamp: false
       soundcloud: true
-      twitch: true
+      twitch: false
       vimeo: false
       nico: false
       http: false
       local: false
+    filters:
+      volume: false
+      equalizer: false
+      karaoke: false
+      timescale: false
+      tremolo: false
+      vibrato: false
+      distortion: false
+      rotation: false
+      channelMix: false
+      lowPass: false
     youtubePlaylistLoadLimit: 1 # Number of pages, 100 videos per page
     youtubeSearchEnabled: true
     soundcloudSearchEnabled: true
-    bufferDurationMs: 10000
-    frameBufferDurationMs: 10000
-    trackStuckThresholdMs: 10000
-    opusEncodingQuality: 0
+    bufferDurationMs: 400
+    frameBufferDurationMs: 2000
+    trackStuckThresholdMs: 25000
+    opusEncodingQuality: 5
     resamplingQuality: LOW
-    playerUpdateInterval: 10
-    gc-warnings: false
+    playerUpdateInterval: 5
+    gc-warnings: true
     timeouts:
       connectTimeoutMs: 3000
       connectionRequestTimeoutMs: 3000
@@ -40,7 +50,6 @@ plugins:
     allowSearch: true
     allowDirectVideoIds: true
     allowDirectPlaylistIds: true
-    # noinspection SpellCheckingInspection
     clients:
       # See https://github.com/lavalink-devs/youtube-source?tab=readme-ov-file#available-clients
       #- TV # Requires login
@@ -58,12 +67,11 @@ logging:
     root: INFO
     lavalink: INFO
     lavalink.server.io.SocketContext: INFO
-    # noinspection SpellCheckingInspection
     com.sedmelluq.discord.lavaplayer.tools.ExceptionTools: INFO
     dev.lavalink.youtube: INFO
   request:
-    enabled: false
-    includeClientInfo: true
-    includeHeaders: true
-    includeQueryString: true
-    includePayload: true
+    enabled: false               # Disabled to reduce I/O overhead and CPU usage on small instance
+    includeClientInfo: false
+    includeHeaders: false
+    includeQueryString: false
+    includePayload: false
