@@ -20,5 +20,5 @@ WORKDIR /radio-pele
 
 COPY --from=maven-bot /build/bot/target/radio-pele-java-bot-0.0.1-SNAPSHOT.jar ./radio_pele.jar
 
-ENV JAVA_TOOL_OPTIONS "-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:InitiatingHeapOccupancyPercent=35 -Xms512m -Xmx512m"
+ENV JAVA_TOOL_OPTIONS "-XX:MaxGCPauseMillis=200 -Xms1500m -Xmx1500m"
 ENTRYPOINT ["java", "-jar", "-noverify", "./radio_pele.jar"]
