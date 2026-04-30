@@ -14,15 +14,15 @@
   <name>radio-pele-java</name>
   <packaging>pom</packaging>
   <properties>
-    <kotlin.version>2.3.10</kotlin.version>
+    <kotlin.version>2.3.21</kotlin.version>
     <maven.compiler.release>24</maven.compiler.release>
     <start-class>com.lmpakkanen.radiopelejava.RadioPeleJavaApplicationKt</start-class>
     <!-- Dependency versions -->
-    <ktlint-maven-plugin.version>3.5.0</ktlint-maven-plugin.version>
-    <jda.version>6.3.1</jda.version>
+    <ktlint-maven-plugin.version>3.7.1</ktlint-maven-plugin.version>
+    <jda.version>6.4.1</jda.version>
     <lavalink-client.version>3.4.0</lavalink-client.version>
     <spotify-web-api-java.version>9.4.0</spotify-web-api-java.version>
-    <jackson-jr-objects.version>2.21.1</jackson-jr-objects.version>
+    <jackson-jr-objects.version>2.21.3</jackson-jr-objects.version>
     <tidal_api.version>0.0.2</tidal_api.version>
     <kotlin-logging-jvm.version>8.0.01</kotlin-logging-jvm.version>
   </properties>
