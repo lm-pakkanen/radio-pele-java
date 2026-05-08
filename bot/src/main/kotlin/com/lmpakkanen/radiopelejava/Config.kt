@@ -28,7 +28,9 @@ import org.springframework.util.Assert
 )
 open class Config {
     companion object {
+        // Maximum queue sizes to prevent memory bloat on resource-constrained instances.
         const val PLAYLIST_MAX_SIZE: Int = 25
+        const val QUEUE_MAX_SIZE: Int = 50
     }
 
     @Value($$"${REGEN_COMMANDS:false}")

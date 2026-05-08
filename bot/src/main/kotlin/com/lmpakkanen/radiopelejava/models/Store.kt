@@ -11,8 +11,10 @@ import kotlin.math.min
 @Log4j2
 @Component
 class Store {
-    val playListQueue: MutableList<Track> = ArrayList(1)
-    val queue: BlockingQueue<Track> = LinkedBlockingQueue()
+    // Initialize with capacity hint matching PLAYLIST_MAX_SIZE (25) from Config
+    // This reduces ArrayList re-allocations and memory fragmentation
+    val playListQueue: MutableList<Track> = ArrayList(Config.PLAYLIST_MAX_SIZE)
+    val queue: BlockingQueue<Track> = LinkedBlockingQueue(Config.QUEUE_MAX_SIZE) // Bounded queue to prevent memory bloat
 
     /**
      * Adds a track to the queue.
@@ -20,11 +22,8 @@ class Store {
      * @param track to add.
      */
     fun add(track: Track?): Boolean {
-        var wasPresent = false
-
-        track?.let { track -> wasPresent = this.queue.offer(track) }
-
-        return wasPresent
+        track?.let { track -> return this.queue.offer(track) }
+        return false
     }
 
     /**
