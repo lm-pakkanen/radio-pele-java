@@ -24,7 +24,7 @@
     <spotify-web-api-java.version>9.4.0</spotify-web-api-java.version>
     <jackson-jr-objects.version>2.21.3</jackson-jr-objects.version>
     <tidal_api.version>0.0.2</tidal_api.version>
-    <kotlin-logging-jvm.version>8.0.01</kotlin-logging-jvm.version>
+    <kotlin-logging-jvm.version>8.0.02</kotlin-logging-jvm.version>
   </properties>
   <repositories>
     <repository>
