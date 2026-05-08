@@ -40,17 +40,15 @@ services:
       - prod
     image: us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/radio-pele-bot:latest
     build:
-      context: .
-      dockerfile: ./bot/Dockerfile
+      context: ./bot
     container_name: radio_pele_bot
     restart: unless-stopped
     depends_on:
       - lavalink
     networks:
       - lavalink
-    # Native image footprint: ~50-80MB runtime (vs 180-220MB JVM)
-    mem_limit: 128m
-    memswap_limit: 128m
+    mem_limit: 256m
+    memswap_limit: 256m
 networks:
   # Network for Lavalink service; accessible to the bot container
   lavalink:
