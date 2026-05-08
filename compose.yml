@@ -8,7 +8,6 @@ services:
     container_name: radio_pele_lavalink
     restart: unless-stopped
     environment:
-      # Optimized for E2-micro: use 128MB to leave room for bot (1GB instance total)
       - _JAVA_OPTIONS=-XX:+UseSerialGC -Xms128m -Xmx256m
       - SERVER_PORT=2333
       # This is not actually a secret, so whatever. The container is not exposed to the internet.
