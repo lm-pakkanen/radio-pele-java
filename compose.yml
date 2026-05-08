@@ -8,7 +8,7 @@ services:
     container_name: radio_pele_lavalink
     restart: unless-stopped
     environment:
-      - _JAVA_OPTIONS=-XX:+UseSerialGC -Xms128m -Xmx256m
+      - _JAVA_OPTIONS=-XX:+UseSerialGC -Xms256m -Xmx768m
       - SERVER_PORT=2333
       # This is not actually a secret, so whatever. The container is not exposed to the internet.
       - LAVALINK_SERVER_PASSWORD=j^t411l0@xVJy4pg%!0sfDge6bp4bPpS8aT1r&Ipc^Ir^JCx*epMjo$6@2EA
@@ -20,8 +20,8 @@ services:
       - lavalink
     expose:
       - 2333
-    mem_limit: 256m
-    memswap_limit: 256m
+    mem_limit: 512m
+    memswap_limit: 512m
       #healthcheck:
       #test: ["CMD", "curl", "-f", "http://localhost:2333/metrics"]
       #start_period: 10s

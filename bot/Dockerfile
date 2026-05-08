@@ -21,5 +21,5 @@ WORKDIR /radio-pele
 COPY --from=maven-bot /build/bot/target/radio-pele-java-bot-0.0.1-SNAPSHOT.jar ./radio_pele.jar
 
 # Using SerialGC for low-memory environments with limited heap allocation
-ENV JAVA_TOOL_OPTIONS "-XX:+UseSerialGC -Xms256m -Xmx256m -XX:+ExitOnOutOfMemoryError"
+ENV JAVA_TOOL_OPTIONS "-XX:+UseSerialGC -Xms256m -Xmx512m -XX:+ExitOnOutOfMemoryError"
 ENTRYPOINT ["java", "-jar", "-noverify", "./radio_pele.jar"]
