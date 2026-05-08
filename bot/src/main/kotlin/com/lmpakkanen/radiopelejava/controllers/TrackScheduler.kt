@@ -152,6 +152,7 @@ class TrackScheduler(
             this.store.clear()
             this.store.clearPlaylist()
             this.lastTextChan = null
+            this.guildId = null  // Prevent guild reference retention
         }
     }
 
