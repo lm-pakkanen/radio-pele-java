@@ -23,5 +23,5 @@ COPY --from=maven-bot /build/bot/target/radio-pele-java-bot-0.0.1-SNAPSHOT.jar .
 # Using SerialGC for low-memory environments with limited heap allocation
 # Reduced heap for E2-micro instances: 64m min (lazy allocation), 180m max
 # Added GC tuning for predictable behavior and memory efficiency
-ENV JAVA_TOOL_OPTIONS "-XX:+UseSerialGC -Xms64m -Xmx180m -XX:+ExitOnOutOfMemoryError -XX:+AlwaysActualCommitMemory -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:MaxMetaspaceSize=64m"
+ENV JAVA_TOOL_OPTIONS "-XX:+UseSerialGC -Xms64m -Xmx180m -XX:+ExitOnOutOfMemoryError -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:MaxMetaspaceSize=64m"
 ENTRYPOINT ["java", "-jar", "-noverify", "./radio_pele.jar"]
