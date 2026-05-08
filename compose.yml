@@ -48,8 +48,9 @@ services:
       - lavalink
     networks:
       - lavalink
-    mem_limit: 256m
-    memswap_limit: 256m
+    # Native image footprint: ~50-80MB runtime (vs 180-220MB JVM)
+    mem_limit: 128m
+    memswap_limit: 128m
 networks:
   # Network for Lavalink service; accessible to the bot container
   lavalink:
