@@ -105,21 +105,23 @@ class TrackScheduler(
         }
 
         val firstTrack: Track = audioTracks.first()
+        var isAdded: Boolean
 
         try {
             if (asPlaylist) {
                 this.store.addPlaylist(audioTracks)
+                isAdded = true
             } else {
-                val addResult = this.store.add(firstTrack)
-
-                if (!addResult) {
-                    throw FailedToLoadSongException("Not found.")
-                }
+                isAdded = this.store.add(firstTrack)
             }
         } catch (ex: Exception) {
             // Clear tracks from memory if addition fails
             logger.warn("Failed to add tracks to queue", ex)
             throw FailedToLoadSongException("Failed to add tracks: ${ex.message}")
+        }
+
+        if (!isAdded) {
+            throw FailedToLoadSongException("Not found.")
         }
 
         return firstTrack
