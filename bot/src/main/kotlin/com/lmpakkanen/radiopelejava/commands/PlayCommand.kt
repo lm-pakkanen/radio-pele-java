@@ -93,7 +93,9 @@ class PlayCommand(
                     MailMan.replyInteraction(event, ExceptionEmbed(ex).embed)
                 }
 
-                else -> throw ex
+                else -> {
+                    throw ex
+                }
             }
         }
     }

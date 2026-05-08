@@ -94,7 +94,9 @@ class PlayListCommand(
                     MailMan.replyInteraction(event, ExceptionEmbed(ex).embed)
                 }
 
-                else -> throw ex
+                else -> {
+                    throw ex
+                }
             }
         }
     }

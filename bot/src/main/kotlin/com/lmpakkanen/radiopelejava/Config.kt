@@ -106,9 +106,11 @@ open class Config {
         clientBuilder.setStatus(OnlineStatus.ONLINE)
         clientBuilder.setActivity(Activity.playing(botStatusMessage))
 
-        clientBuilder.disableCache(CacheFlag.entries.toMutableSet().apply {
-            remove(CacheFlag.VOICE_STATE)  // Keep only this
-        })
+        clientBuilder.disableCache(
+            CacheFlag.entries.toMutableSet().apply {
+                remove(CacheFlag.VOICE_STATE) // Keep only this
+            },
+        )
 
         val client = clientBuilder.build()
 

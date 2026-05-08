@@ -80,9 +80,9 @@ class Store {
         }
 
         // Convert to list, shuffle in-place, then rebuild queue to avoid memory bloat
-        val tracks = this.queue.toList()  // Single collection
+        val tracks = this.queue.toList() // Single collection
         this.queue.clear()
-        this.queue.addAll(tracks.shuffled())  // shuffled() creates list once, not twice
+        this.queue.addAll(tracks.shuffled()) // shuffled() creates list once, not twice
     }
 
     fun getQueueSize(): Int = this.queue.size

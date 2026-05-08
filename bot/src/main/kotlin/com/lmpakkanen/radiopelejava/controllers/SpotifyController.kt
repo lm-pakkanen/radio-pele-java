@@ -114,7 +114,9 @@ class SpotifyController(
                     throw FailedToLoadSongException(exceptionMessage)
                 }
 
-                else -> throw exception
+                else -> {
+                    throw exception
+                }
             }
         }
 
@@ -226,7 +228,9 @@ class SpotifyController(
                     this.isUsable = false
                 }
 
-                else -> throw exception
+                else -> {
+                    throw exception
+                }
             }
         }
     }

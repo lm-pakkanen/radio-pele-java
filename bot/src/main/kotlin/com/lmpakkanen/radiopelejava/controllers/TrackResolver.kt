@@ -45,7 +45,9 @@ class TrackResolver(
                     throw FailedToLoadSongException("Invalid URL.")
                 }
 
-                else -> throw ex
+                else -> {
+                    throw ex
+                }
             }
         }
 
