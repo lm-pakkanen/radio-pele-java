@@ -52,12 +52,16 @@ plugins:
     allowDirectPlaylistIds: true
     clients:
       # See https://github.com/lavalink-devs/youtube-source?tab=readme-ov-file#available-clients
-      #- TV # Requires login
-      #- TVHTML5EMBEDDED # Requires login
+      - TVHTML5_SIMPLY
       - WEBEMBEDDED
       - MWEB
       - WEB
       - ANDROID_VR
+      - ANDROID_MUSIC
+      - IOS
+      - ANDROID # Often broken
+      #- TV # Requires login
+      # - MUSIC # No playback etc.
 metrics:
   prometheus:
     enabled: false
