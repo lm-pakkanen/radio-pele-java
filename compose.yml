@@ -4,7 +4,9 @@ services:
       - prod
     # noinspection SpellCheckingInspection,SpellCheckingInspection
     # See https://github.com/lavalink-devs/lavalink/releases
-    image: ghcr.io/lavalink-devs/lavalink:4.2.2-distroless
+    image: us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/radio-pele-lavalink:latest
+    build:
+      dockerfile: ./lavalink/Dockerfile
     container_name: radio_pele_lavalink
     restart: unless-stopped
     environment:
@@ -24,12 +26,12 @@ services:
       - 2333
     mem_limit: 450m
     memswap_limit: 450m
-      #healthcheck:
-      #test: ["CMD", "curl", "-f", "http://localhost:2333/metrics"]
-      #start_period: 10s
-      #interval: 10s
-      #timeout: 5s
-      #retries: 360 # 60min * 60s / 10s = 360 retries for 1hr
+    healthcheck:
+      test: ["CMD", "curl", "-f", "0.0.0.0:2333/v4/stats", "-H", "Authorization: j^t411l0@xVJy4pg%!0sfDge6bp4bPpS8aT1r&Ipc^Ir^JCx*epMjo$6@2EA"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 120
   lavalink-local:
     <<: *lavalink
     profiles:
@@ -48,7 +50,8 @@ services:
     environment:
       - _JAVA_OPTIONS=-XX:+UseSerialGC -Xms56m -Xmx128m -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:+ExitOnOutOfMemoryError
     depends_on:
-      - lavalink
+      lavalink:
+        condition: service_healthy
     networks:
       - lavalink
     mem_limit: 128m
