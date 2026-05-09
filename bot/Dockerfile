@@ -7,7 +7,6 @@ COPY ./bot ./bot
 
 WORKDIR /build/bot
 
-# Build native image - mvnw is in bot directory
 RUN \
   --mount=type=cache,target=/root/.m2 \
   ./mvnw clean package -Pnative \
@@ -15,7 +14,6 @@ RUN \
   -Dmaven.test.skip \
   -e
 
-# Minimal runtime image
 FROM ubuntu:24.04
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -27,10 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /radio-pele
 
-# Copy executable
 COPY --from=builder /build/bot/target/radio-pele-java-bot ./radio_pele
 RUN chmod +x ./radio_pele
-
-ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError"
 
 ENTRYPOINT ["./radio_pele"]

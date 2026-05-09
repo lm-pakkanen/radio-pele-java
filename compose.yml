@@ -8,7 +8,7 @@ services:
     container_name: radio_pele_lavalink
     restart: unless-stopped
     environment:
-      - _JAVA_OPTIONS=-XX:+UseSerialGC -Xms256m -Xmx400m -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40
+      - _JAVA_OPTIONS=-XX:+UseSerialGC -Xms256m -Xmx450m -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:+ExitOnOutOfMemoryError
       - SERVER_PORT=2333
       # This is not actually a secret, so whatever. The container is not exposed to the internet.
       - LAVALINK_SERVER_PASSWORD=j^t411l0@xVJy4pg%!0sfDge6bp4bPpS8aT1r&Ipc^Ir^JCx*epMjo$6@2EA
@@ -20,8 +20,8 @@ services:
       - lavalink
     expose:
       - 2333
-    mem_limit: 400m
-    memswap_limit: 400m
+    mem_limit: 450m
+    memswap_limit: 450m
       #healthcheck:
       #test: ["CMD", "curl", "-f", "http://localhost:2333/metrics"]
       #start_period: 10s
@@ -44,13 +44,13 @@ services:
     container_name: radio_pele_bot
     restart: unless-stopped
     environment:
-      - _JAVA_OPTIONS=-XX:+UseSerialGC -Xms128m -Xmx200m -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40
+      - _JAVA_OPTIONS=-XX:+UseSerialGC -Xms56m -Xmx128m -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:+ExitOnOutOfMemoryError
     depends_on:
       - lavalink
     networks:
       - lavalink
-    mem_limit: 200m
-    memswap_limit: 200m
+    mem_limit: 128m
+    memswap_limit: 128m
 networks:
   # Network for Lavalink service; accessible to the bot container
   lavalink:
