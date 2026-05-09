@@ -9,11 +9,11 @@ WORKDIR /build/bot
 
 # Build native image - mvnw is in bot directory
 RUN \
+  --mount=type=cache,target=/root/.m2 \
   ./mvnw clean package -Pnative \
   -Dmaven.repo.local=/root/.m2 \
   -Dmaven.test.skip \
-  -e && \
-  ls -la /build/bot/target/
+  -e
 
 # Minimal runtime image
 FROM ubuntu:24.04
