@@ -1,0 +1,53 @@
+{
+  "reflection": [
+    {
+      "type": "net.dv8tion.jda.api.hooks.ListenerAdapter",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allDeclaredConstructors": true,
+      "allDeclaredMethods": true
+    },
+    {
+      "type": "net.dv8tion.jda.api.events.Event",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allDeclaredMethods": true
+    },
+    {
+      "type": "net.dv8tion.jda.api.events.GenericEvent",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allDeclaredMethods": true
+    },
+    {
+      "type": "net.dv8tion.jda.api.events.http.HttpRequestEvent",
+      "allPublicConstructors": true,
+      "allPublicMethods": true
+    },
+    { "type": "net.dv8tion.jda.api.entities.User[]" },
+    { "type": "net.dv8tion.jda.api.entities.Role[]" },
+    { "type": "net.dv8tion.jda.api.entities.Guild[]" },
+    { "type": "net.dv8tion.jda.api.entities.Member[]" },
+    { "type": "net.dv8tion.jda.api.entities.ScheduledEvent[]" },
+    { "type": "net.dv8tion.jda.api.entities.ThreadMember[]" },
+    { "type": "net.dv8tion.jda.api.entities.channel.Channel[]" },
+    { "type": "net.dv8tion.jda.api.entities.channel.forums.ForumTag[]" },
+    { "type": "net.dv8tion.jda.api.entities.channel.middleman.GuildChannel[]" },
+    { "type": "net.dv8tion.jda.api.entities.emoji.RichCustomEmoji[]" },
+    { "type": "net.dv8tion.jda.api.entities.sticker.GuildSticker[]" },
+    { "type": "net.dv8tion.jda.api.managers.AudioManager[]" },
+    { "type": "net.dv8tion.jda.internal.entities.GuildVoiceStateImpl[]" },
+    { "type": "net.dv8tion.jda.internal.entities.MemberPresenceImpl[]" },
+    { "type": "net.dv8tion.jda.api.entities.SoundboardSound[]" },
+    { "type": "net.dv8tion.jda.api.entities.channel.concrete.TextChannel[]" },
+    { "type": "net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel[]" },
+    { "type": "net.dv8tion.jda.api.managers.GuildManager[]" }
+  ],
+  "resources": [
+    { "pattern": "META-INF/spring.factories" },
+    { "pattern": "META-INF/spring/.*" },
+    { "pattern": "application.yml" },
+    { "pattern": "application-prod.yml "}
+  ]
+}
+

@@ -1,27 +1,31 @@
-# syntax=docker/dockerfile:experimental
-ARG JAVA_VERSION=21
-
-FROM maven:3.9.10-eclipse-temurin-${JAVA_VERSION}-alpine AS maven-parent
+FROM container-registry.oracle.com/graalvm/native-image:25 AS builder
 
 WORKDIR /build
-COPY ./pom.xml ./pom.xml
-RUN --mount=type=cache,target=/tmp/build mvn install -Dmaven.repo.local=/tmp/build
 
-FROM maven-parent AS maven-bot
+COPY ./pom.xml ./
+COPY ./bot ./bot
 
 WORKDIR /build/bot
-COPY ./bot/pom.xml ./pom.xml
-COPY ./bot/src ./src
-RUN --mount=type=cache,target=/tmp/build mvn package -Dmaven.repo.local=/tmp/build -Dmaven.test.skip
 
-FROM eclipse-temurin:${JAVA_VERSION}-jre-alpine AS jdk
+RUN \
+  --mount=type=cache,target=/root/.m2 \
+  ./mvnw clean package -Pnative \
+  -Dmaven.repo.local=/root/.m2 \
+  -Dmaven.test.skip \
+  -e
+
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  libstdc++6 \
+  libgcc1 \
+  zlib1g \
+  ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /radio-pele
 
-COPY --from=maven-bot /build/bot/target/radio-pele-java-bot-0.0.1-SNAPSHOT.jar ./radio_pele.jar
+COPY --from=builder /build/bot/target/radio-pele-java-bot ./radio_pele
+RUN chmod +x ./radio_pele
 
-# Using SerialGC for low-memory environments with limited heap allocation
-# Reduced heap for E2-micro instances: 64m min (lazy allocation), 180m max
-# Added GC tuning for predictable behavior and memory efficiency
-ENV JAVA_TOOL_OPTIONS "-XX:+UseSerialGC -Xms64m -Xmx180m -XX:+ExitOnOutOfMemoryError -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40"
-ENTRYPOINT ["java", "-jar", "-noverify", "./radio_pele.jar"]
+ENTRYPOINT ["./radio_pele"]

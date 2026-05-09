@@ -172,4 +172,50 @@
       <version>${kotlin.version}</version>
     </dependency>
   </dependencies>
+  <profiles>
+    <profile>
+      <id>native</id>
+      <properties>
+        <repackage.classifier>exec</repackage.classifier>
+        <skipTests>true</skipTests>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <version>0.10.3</version>
+            <extensions>true</extensions>
+            <configuration>
+              <imageName>${project.artifactId}</imageName>
+              <mainClass>${start-class}</mainClass>
+              <buildArgs>
+                <buildArg>-Ob</buildArg>
+                <buildArg>--enable-preview</buildArg>
+                <buildArg>-H:+JNI</buildArg>
+                <buildArg>-H:Log=registerResource:</buildArg>
+                <buildArg>-H:+ReportUnsupportedElementsAtRuntime</buildArg>
+                <buildArg>-H:+AllowIncompleteClasspath</buildArg>
+              </buildArgs>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>compile-no-fork</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+              <classifier>${repackage.classifier}</classifier>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
