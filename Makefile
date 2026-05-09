@@ -18,7 +18,8 @@ run-artifactory:
 push-pull:
 	echo "Building project"
 	DOCKER_BUILDKIT=1 COMPOSE_BAKE=true docker compose --progress "plain" --profile "prod" build
-	echo "Pushing image"
+	echo "Pushing images"
+	docker push us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/radio-pele-lavalink:latest
 	docker push us-east1-docker.pkg.dev/flash-bazaar-487/radio-pele/radio-pele-bot:latest
 
 upgrade-major:
