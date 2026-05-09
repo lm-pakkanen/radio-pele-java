@@ -1,18 +1,36 @@
 FROM container-registry.oracle.com/graalvm/native-image:25 AS builder
 
 WORKDIR /build
-COPY . /build
 
+COPY ./pom.xml ./
+COPY ./bot ./bot
+
+WORKDIR /build/bot
+
+# Build native image - mvnw is in bot directory
 RUN \
-  --mount=type=cache,target=/tmp/build \
-  ./mvnw \
-  --no-transfer-progress \
-  -Dmaven.repo.local=/tmp/build \
-  -Pnative \
-  native:compile
+  ./mvnw clean package -Pnative \
+  -Dmaven.repo.local=/root/.m2 \
+  -Dmaven.test.skip \
+  -e && \
+  ls -la /build/bot/target/
 
+# Minimal runtime image
+FROM ubuntu:24.04
 
-FROM container-registry.oracle.com/os/oraclelinux:10-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  libstdc++6 \
+  libgcc1 \
+  zlib1g \
+  ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /build/target/radio-pele-java-bot app
-ENTRYPOINT ["/app"]
+WORKDIR /radio-pele
+
+# Copy executable
+COPY --from=builder /build/bot/target/radio-pele-java-bot ./radio_pele
+RUN chmod +x ./radio_pele
+
+ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError"
+
+ENTRYPOINT ["./radio_pele"]
