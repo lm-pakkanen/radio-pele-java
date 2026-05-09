@@ -18,6 +18,8 @@ services:
       - ./lavalink/plugins/:/opt/Lavalink/plugins/
     networks:
       - lavalink
+    ports:
+      - "2333:2333"
     expose:
       - 2333
     mem_limit: 450m
